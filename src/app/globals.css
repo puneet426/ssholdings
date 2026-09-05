@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+:root {
+  /* Neutral, material-inspired palette */
+  --color-paper: #f7f5f2;
+  --color-paper-warm: #efeae3;
+  --color-stone: #d9d2c7;
+  --color-stone-dark: #a89f92;
+  --color-charcoal: #23211f;
+  --color-charcoal-soft: #34312d;
+  --color-ink: #131211;
+  --color-accent: #9c6b46;
+  --color-accent-soft: #c9a583;
+  /* Pulled from the hero's own material textures (public/webgl/textures) so
+     the sections after it read as different rooms of the same gallery. */
+  --color-copper: #c2903f;
+  --color-slate: #6f7686;
+}
+
+@theme inline {
+  --color-paper: var(--color-paper);
+  --color-paper-warm: var(--color-paper-warm);
+  --color-stone: var(--color-stone);
+  --color-stone-dark: var(--color-stone-dark);
+  --color-charcoal: var(--color-charcoal);
+  --color-charcoal-soft: var(--color-charcoal-soft);
+  --color-ink: var(--color-ink);
+  --color-accent: var(--color-accent);
+  --color-accent-soft: var(--color-accent-soft);
+  --color-copper: var(--color-copper);
+  --color-slate: var(--color-slate);
+  --font-display: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+body {
+  background: var(--color-charcoal);
+  color: var(--color-paper);
+  font-family: var(--font-body);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* thin, architectural scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-charcoal);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-stone-dark);
+  border-radius: 999px;
+}
+
+.text-balance {
+  text-wrap: balance;
+}

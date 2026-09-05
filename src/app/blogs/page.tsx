@@ -1,0 +1,57 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { SectionGlow } from "@/components/ui/SectionGlow";
+import { BlogCard } from "@/components/blog/BlogCard";
+import { blogPosts } from "@/data/blog";
+
+export const metadata: Metadata = {
+  title: "Blogs",
+  description:
+    "Notes on construction quality, materials and design from the SS Holdings team — for anyone planning their next property in Visakhapatnam.",
+};
+
+export default function BlogsPage() {
+  return (
+    <>
+      <Header />
+      <main className="flex-1">
+        <section className="relative overflow-hidden bg-charcoal pt-32 pb-20 text-paper lg:pt-40 lg:pb-28">
+          <SectionGlow tone="copper" />
+          <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-10">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-sm text-paper/60 transition-colors hover:text-paper"
+            >
+              <ArrowLeft className="h-4 w-4" strokeWidth={1.5} />
+              Back to Home
+            </Link>
+
+            <div className="mt-10 max-w-2xl">
+              <p className="text-xs uppercase tracking-[0.3em] text-paper/50">
+                The SS Holdings Journal
+              </p>
+              <h1 className="font-display mt-4 text-4xl font-medium text-balance sm:text-5xl">
+                Blogs
+              </h1>
+              <p className="mt-5 leading-relaxed text-paper/70">
+                Notes on construction quality, design decisions and what
+                actually makes a home worth building — written for anyone
+                planning their next property in Visakhapatnam and beyond.
+              </p>
+            </div>
+
+            <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {blogPosts.map((post) => (
+                <BlogCard key={post.slug} post={post} />
+              ))}
+            </div>
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </>
+  );
+}
