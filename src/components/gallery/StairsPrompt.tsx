@@ -34,6 +34,10 @@ export function StairsPrompt({ current, progressRef, onSelect }: StairsPromptPro
     return () => cancelAnimationFrame(raf.current);
   }, [progressRef]);
 
+  // The First Floor's walk-through ends on its own closing caption
+  // ("Now come see us.") — no stairs / change-floor card there.
+  if (current === "ff") return null;
+
   const up = stepFloor(current, 1);
   const down = stepFloor(current, -1);
   const options = [up, down].filter(Boolean) as ReturnType<typeof getFloor>[];

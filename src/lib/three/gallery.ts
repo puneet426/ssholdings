@@ -63,8 +63,8 @@ export interface WallText3D {
   /**
    * Fixed Euler rotation (radians, XYZ order) that lays the text flush
    * against its wall — a sticker, not a billboard. Captured alongside
-   * `position` by DevPlacementHelper. Omit to fall back to the old
-   * always-face-camera behavior.
+   * `position` by DevPlacementHelper. Omit to fall back to facing the
+   * viewer head-on (used for the opening title).
    */
   rotation?: [number, number, number];
   /** World-unit character height — auto-sized by distance from camera if omitted. */
@@ -203,13 +203,22 @@ export const FLOORS: GalleryFloor[] = [
     // walls instead, synced to the rail. `position` below is UNPLACED
     // (world origin) until run through DevPlacementHelper.
     hotspots: [],
+    // One caption per wall, each fading in only around its own `at` so two are
+    // never on screen together. Heights sit in a ~2.6–3.0 band: above the
+    // kitchen island / sofas / pillars that would clip a lower line, but low
+    // enough that the wider mobile FOV doesn't crop the top. ff-wall-1 has no
+    // `rotation` (it faces the viewer — the opening title) and is pulled
+    // forward so it reads big on a phone. ff-wall-3/4/5 are spread along the
+    // run of walls the camera faces through the middle of the walk so no two
+    // share a spot, each centred on that moment's sightline (ff-wall-4 nudged
+    // off the centre column). ff-wall-2/7/8/9 are the hand-placed originals.
     wallTexts3D: [
-      { id: "ff-wall-1", at: 0.00, position: [-4.42, 3.55, -6.08], text: "SS Holdings Builders in Visakhapatnam" },
+      { id: "ff-wall-1", at: 0.00, position: [-8.00, 3.00, -5.90], text: "SS Holdings Builders in Visakhapatnam" },
       { id: "ff-wall-2", at: 0.15, position: [-13.51, 2.60, 3.74], rotation: [0.00, -1.57, 0.00], text: "Designed and built as per Vastu Principles" },
-      { id: "ff-wall-3", at: 0.28, position: [-6.57, 4.00, 2.02], rotation: [0.00, 0.00, 0.00], text: "Address of Quality" },
-      { id: "ff-wall-4", at: 0.40, position: [-6.29, 3.50, 1.94], rotation: [0.00, 0.00, 0.00], text: "35+ Projects Delivered on time Every Time" },
-      { id: "ff-wall-5", at: 0.50, position: [7.21, 4.10, 0.48], rotation: [0.00, 0.00, 0.00], text: "25 years of Building Quality Homes with Trust" },
-      { id: "ff-wall-6", at: 0.61, position: [7.55, 3.88, 0.56], rotation: [0.00, 0.00, 0.00], text: "Building Luxury Homes" },
+      { id: "ff-wall-3", at: 0.28, position: [-11.80, 2.90, 6.10], rotation: [0.00, 0.00, 0.00], text: "Address of Quality" },
+      { id: "ff-wall-4", at: 0.40, position: [-1.20, 3.00, 6.60], rotation: [0.00, 0.00, 0.00], text: "35+ Projects Delivered on time Every Time" },
+      { id: "ff-wall-5", at: 0.50, position: [4.00, 2.90, 4.60], rotation: [0.00, 0.00, 0.00], text: "25 years of Building Quality Homes with Trust" },
+      { id: "ff-wall-6", at: 0.61, position: [7.55, 3.00, 0.56], rotation: [0.00, 0.00, 0.00], text: "Building Luxury Homes" },
       { id: "ff-wall-7", at: 0.73, position: [12.59, 2.81, 0.16], rotation: [0.00, 1.57, 0.00], text: "Visit Our Projects and See the Quality Firsthand" },
       { id: "ff-wall-8", at: 0.84, position: [10.02, 0.84, -4.80], rotation: [0.00, 1.57, 0.00], text: "Something tells us you like our work" },
       { id: "ff-wall-9", at: 1.00, position: [11.59, 2.50, -18.54], rotation: [0.00, 1.57, 0.00], text: "You’ve seen enough. Now come see us." },

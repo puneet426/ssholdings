@@ -30,6 +30,10 @@ const DRAG_DIVISOR = 3400;
 // take five drags to cross a floor, and — paired with the fling below — a
 // flick keeps gliding after the finger lifts instead of dead-stopping.
 const TOUCH_DRAG_DIVISOR = 1500;
+// The First Floor scrubs ~12% slower than the other floors — its wall
+// captions each need an extra beat to land as the camera passes. Applied to
+// every scrub delta (wheel, drag, touch, fling) while "ff" is active.
+const FF_SCRUB_SCALE = 0.88;
 // Most the target may move in one event, so a hard fling can't tear the
 // eased camera off the front of the rail.
 const MAX_STEP = 0.03;
@@ -51,6 +55,10 @@ export function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
   const progressRef = useRef(0);
   const pointerRef = useRef({ x: 0, y: 0 });
+
+  // Mirrors `floorId` for the event handlers (their effect isn't re-run per
+  // floor) so the scrub can slow down on the First Floor.
+  const floorIdRef = useRef<FloorId>(DEFAULT_FLOOR);
 
   const dragging = useRef(false);
   const lastX = useRef(0);
@@ -83,6 +91,10 @@ export function Hero() {
   useEffect(() => {
     veiledRef.current = veiled;
   }, [veiled]);
+
+  useEffect(() => {
+    floorIdRef.current = floorId;
+  }, [floorId]);
 
   // Cover the swap with a warm plate, flip state behind it, then let the new
   // scene's own loader lift it (with a failsafe).
@@ -143,7 +155,12 @@ export function Hero() {
 
     const bump = (deltaProgress: number) => {
       if (reducedMotion) return;
-      const step = Math.max(-MAX_STEP, Math.min(MAX_STEP, deltaProgress));
+      // First Floor rides its rail a touch slower (see FF_SCRUB_SCALE).
+      const scaled =
+        floorIdRef.current === "ff"
+          ? deltaProgress * FF_SCRUB_SCALE
+          : deltaProgress;
+      const step = Math.max(-MAX_STEP, Math.min(MAX_STEP, scaled));
       const next = Math.min(Math.max(progressRef.current + step, 0), 1);
       progressRef.current = next;
 
