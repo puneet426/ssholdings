@@ -13,7 +13,13 @@ import { LoadingOverlay } from "./LoadingOverlay";
 import { ModelErrorBoundary } from "./ModelErrorBoundary";
 import { useDeviceQuality } from "@/hooks/useDeviceQuality";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
-import { ENV_MAP_URL, getFloor, type FloorId } from "@/lib/three/gallery";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import {
+  ENV_MAP_URL,
+  MOBILE_FOV_SCALE,
+  getFloor,
+  type FloorId,
+} from "@/lib/three/gallery";
 
 interface RoomSceneProps {
   floorId: FloorId;
@@ -32,7 +38,12 @@ export function RoomScene({
 }: RoomSceneProps) {
   const quality = useDeviceQuality();
   const reducedMotion = usePrefersReducedMotion();
+  const isMobile = useIsMobile();
   const floor = getFloor(floorId);
+  // Phones get a wider lens so the baked walk-through frames ~15% more of
+  // each room — the desktop framing crops the wall captions on a narrow
+  // screen. Desktop is untouched.
+  const fov = isMobile ? floor.fov * MOBILE_FOV_SCALE : floor.fov;
 
   // `ready` gates the crossfade from the loading plate to the scene. Tracked
   // per-floor (not a boolean we'd have to reset) so a floor swap re-shows the
@@ -63,7 +74,7 @@ export function RoomScene({
             powerPreference: "high-performance",
             toneMapping: THREE.NoToneMapping,
           }}
-          camera={{ fov: floor.fov, near: 0.1, far: 1000 }}
+          camera={{ fov, near: 0.1, far: 1000 }}
         >
           <color attach="background" args={["#0b0a09"]} />
           <ambientLight intensity={0.12} />
@@ -78,10 +89,15 @@ export function RoomScene({
                 progressRef={progressRef}
                 pointerRef={pointerRef}
                 reducedMotion={reducedMotion}
+                fov={fov}
                 smoothProgressRef={smoothProgressRef}
                 onReady={() => setReadyFloor(floorId)}
               />
-              <WallText3D floor={floor} progressRef={smoothProgressRef} />
+              <WallText3D
+                floor={floor}
+                progressRef={smoothProgressRef}
+                isMobile={isMobile}
+              />
               <DevPlacementHelper progressRef={smoothProgressRef} />
             </group>
             {/* Reflections for the glass / polished bits. Non-critical — if

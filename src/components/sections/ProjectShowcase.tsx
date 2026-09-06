@@ -8,55 +8,74 @@ import { showcaseVideos } from "@/data/projectShowcase";
 import { projectVideoPoster, projectVideoUrl } from "@/lib/cloudinary";
 
 /**
- * A bare video tile: no title, no caption, no controls, no sound. `active`
- * is driven by the section's own visibility, not the tile's own, so all
- * four start together. `src` is assigned only on the first activation (so
- * scrolling away and back never re-fetches) and playback just pauses/
- * resumes after that.
+ * A bare video tile: no title, no caption, no controls, no sound.
  *
- * Every source clip opens on a ~2s title/YouTube-style card, so playback
- * (and every loop restart) is seeked past it manually — no native `loop`,
- * `ended` re-seeks to 2s and plays again instead.
+ * Playback is gated on *this tile's* own visibility, not the section's — four
+ * simultaneous decodes was the remaining lag, and on mobile (single column)
+ * only one or two tiles are ever on screen at once. A tile loads its `src`
+ * the first time it nears the viewport and just pauses/resumes on every
+ * scroll in and out after that (never re-fetches).
+ *
+ * The ~2s intro card and the baked-in side pillarbox are both handled in the
+ * Cloudinary URL (see lib/cloudinary), so this just plays the delivered clip
+ * on a native `loop` — no `ended` handler, no per-loop seek.
  */
-function ShowcaseVideo({ path, active }: { path: string; active: boolean }) {
+function ShowcaseVideo({ path }: { path: string }) {
+  const wrapRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  // Small `margin` so a tile pre-buffers just before it scrolls in — kept
+  // tight on purpose so tiles well off screen stay paused and don't burn a
+  // decoder.
+  const active = useInView(wrapRef, { margin: "150px 0px 150px 0px" });
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !path) return;
 
-    const restartPastIntro = () => {
-      video.currentTime = 2;
-      video.play().catch(() => {});
-    };
-    video.addEventListener("ended", restartPastIntro);
-
     if (active) {
-      if (!video.src) {
-        video.src = projectVideoUrl(path);
-        video.addEventListener("loadedmetadata", restartPastIntro, { once: true });
-      } else {
-        video.play().catch(() => {});
-      }
+      // preload="none" fetches nothing until asked: assigning src and
+      // calling play() is what kicks off the load.
+      if (!video.src) video.src = projectVideoUrl(path);
+      video.play().catch(() => {});
     } else {
       video.pause();
     }
-
-    return () => video.removeEventListener("ended", restartPastIntro);
   }, [active, path]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    // A backgrounded tab gets its video decoder throttled or dropped, which
+    // showed up as playback "just stopping" after a while. Pause on hide,
+    // resume on return if the tile is still in view.
+    const onVisibilityChange = () => {
+      if (document.hidden) video.pause();
+      else if (active && video.src) video.play().catch(() => {});
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, [active]);
 
   if (!path) {
     return (
-      <div className="aspect-1886/1060 rounded-2xl border border-dashed border-paper/15 bg-paper/3" />
+      <div
+        ref={wrapRef}
+        className="aspect-1886/1060 rounded-2xl border border-dashed border-paper/15 bg-paper/3"
+      />
     );
   }
 
   return (
-    <div className="aspect-1886/1060 overflow-hidden rounded-2xl border border-paper/10 bg-ink">
+    <div
+      ref={wrapRef}
+      className="aspect-1886/1060 overflow-hidden rounded-2xl border border-paper/10 bg-ink"
+    >
       <video
         ref={videoRef}
         className="h-full w-full object-cover"
         muted
+        loop
         playsInline
         preload="none"
         poster={projectVideoPoster(path)}
@@ -66,16 +85,10 @@ function ShowcaseVideo({ path, active }: { path: string; active: boolean }) {
 }
 
 export function ProjectShowcase() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(sectionRef, {
-    amount: 0.3,
-    margin: "0px 0px -10% 0px",
-  });
-
   return (
     <section
       id="project-showcase"
-      className="relative overflow-hidden border-t border-paper/10 bg-charcoal py-20 text-paper lg:py-28"
+      className="relative overflow-hidden bg-charcoal py-16 text-paper sm:py-20 lg:py-24"
     >
       <SectionGlow tone="slate" />
       <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-10">
@@ -89,13 +102,11 @@ export function ProjectShowcase() {
           </h2>
         </Reveal>
 
-        <div ref={sectionRef}>
-          <Reveal className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-3">
-            {showcaseVideos.map((video) => (
-              <ShowcaseVideo key={video.id} path={video.path} active={isInView} />
-            ))}
-          </Reveal>
-        </div>
+        <Reveal className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-3">
+          {showcaseVideos.map((video) => (
+            <ShowcaseVideo key={video.id} path={video.path} />
+          ))}
+        </Reveal>
       </div>
     </section>
   );

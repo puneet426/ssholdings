@@ -24,11 +24,20 @@ const RoomCanvas = dynamic(
 
 // Wheel delta (px) to travel the whole rail — a long, unhurried scroll.
 const WHEEL_DIVISOR = 7200;
-// Pixels of pointer / touch drag to travel the whole rail.
+// Pixels of mouse drag to travel the whole rail.
 const DRAG_DIVISOR = 3400;
+// Touch is lighter: a phone swipe covers more rail per pixel so it doesn't
+// take five drags to cross a floor, and — paired with the fling below — a
+// flick keeps gliding after the finger lifts instead of dead-stopping.
+const TOUCH_DRAG_DIVISOR = 1500;
 // Most the target may move in one event, so a hard fling can't tear the
 // eased camera off the front of the rail.
 const MAX_STEP = 0.03;
+// Touch fling: after a swipe ends, decay the last measured velocity each
+// frame until it's spent or the rail hits an end.
+const FLING_FRICTION = 0.92; // survives per ~16ms frame
+const MIN_FLING_VELOCITY = 3e-5; // progress units / ms — below this, stop
+const MAX_FLING_VELOCITY = 3e-3; // clamp a wild flick
 
 /**
  * The gallery hero. It drops straight into a floor's pinned first-person
@@ -50,6 +59,12 @@ export function Hero() {
   const unlockedRef = useRef(false);
   const veilTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cardOpenRef = useRef(false);
+  const veiledRef = useRef(false);
+  // Touch swipe momentum: signed progress-units/ms, plus the rAF handle for
+  // the glide that keeps feeding it after the finger lifts.
+  const flingVelocity = useRef(0);
+  const lastMoveTs = useRef(0);
+  const flingRaf = useRef<number | null>(null);
 
   const [floorId, setFloorId] = useState<FloorId>(DEFAULT_FLOOR);
   const [activeHotspot, setActiveHotspot] = useState<Hotspot | null>(null);
@@ -64,6 +79,10 @@ export function Hero() {
   useEffect(() => {
     cardOpenRef.current = activeHotspot !== null;
   }, [activeHotspot]);
+
+  useEffect(() => {
+    veiledRef.current = veiled;
+  }, [veiled]);
 
   // Cover the swap with a warm plate, flip state behind it, then let the new
   // scene's own loader lift it (with a failsafe).
@@ -139,6 +158,46 @@ export function Hero() {
       }
     };
 
+    const stopFling = () => {
+      if (flingRaf.current !== null) {
+        cancelAnimationFrame(flingRaf.current);
+        flingRaf.current = null;
+      }
+      flingVelocity.current = 0;
+    };
+
+    // Coast on the last swipe velocity, shedding it a little each frame, so a
+    // flick on a phone glides to rest instead of stopping the instant the
+    // finger leaves the glass.
+    const startFling = () => {
+      if (flingRaf.current !== null) cancelAnimationFrame(flingRaf.current);
+      let prev = performance.now();
+      const tick = (now: number) => {
+        const dt = Math.min(now - prev, 32);
+        prev = now;
+        if (reducedMotion || cardOpenRef.current || veiledRef.current) {
+          flingRaf.current = null;
+          flingVelocity.current = 0;
+          return;
+        }
+        const v = flingVelocity.current;
+        bump(v * dt);
+        flingVelocity.current = v * Math.pow(FLING_FRICTION, dt / 16);
+        const p = progressRef.current;
+        const spent = Math.abs(flingVelocity.current) < MIN_FLING_VELOCITY;
+        const atEnd =
+          (flingVelocity.current > 0 && p >= 1) ||
+          (flingVelocity.current < 0 && p <= 0);
+        if (spent || atEnd) {
+          flingRaf.current = null;
+          flingVelocity.current = 0;
+          return;
+        }
+        flingRaf.current = requestAnimationFrame(tick);
+      };
+      flingRaf.current = requestAnimationFrame(tick);
+    };
+
     // The overlay UI (Floors panel, chrome, stairs card, product panel) lives
     // on top of the scene — a press there must not start a camera drag or the
     // section's pointer capture would eat the button's click.
@@ -161,6 +220,7 @@ export function Hero() {
       if (forward && p >= 0.999) return;
       if (!forward && (p <= 0.001 || window.scrollY > 0)) return;
       e.preventDefault();
+      stopFling();
       bump(e.deltaY / WHEEL_DIVISOR);
     };
 
@@ -168,33 +228,75 @@ export function Hero() {
       if (cardOpenRef.current || !fromScene(e)) return;
       if (e.pointerType === "mouse" && e.button !== 0) return;
       if (e.pointerType !== "mouse" && unlockedRef.current) return;
+      stopFling();
       dragging.current = true;
       lastX.current = e.clientX;
       lastY.current = e.clientY;
+      lastMoveTs.current = e.timeStamp || performance.now();
       el.setPointerCapture(e.pointerId);
       el.style.cursor = "grabbing";
     };
 
     const onPointerMove = (e: PointerEvent) => {
-      if (dragging.current) {
-        const dx = lastX.current - e.clientX;
-        const dy = lastY.current - e.clientY;
-        lastX.current = e.clientX;
-        lastY.current = e.clientY;
-        const delta = e.pointerType === "mouse" ? dx : dy;
-        bump(delta / DRAG_DIVISOR);
-      } else {
+      if (!dragging.current) {
         pointerRef.current = {
           x: (e.clientX / window.innerWidth) * 2 - 1,
           y: (e.clientY / window.innerHeight) * 2 - 1,
         };
+        return;
+      }
+
+      const isTouch = e.pointerType !== "mouse";
+      const divisor = isTouch ? TOUCH_DRAG_DIVISOR : DRAG_DIVISOR;
+      // Fast flicks can arrive as one pointermove carrying several coalesced
+      // samples — walk them so the travel and the measured velocity match
+      // what the finger actually did. Some browsers hand back an empty list
+      // for an un-coalesced move, so fall back to the event itself.
+      const coalesced =
+        isTouch && typeof e.getCoalescedEvents === "function"
+          ? e.getCoalescedEvents()
+          : null;
+      const samples = coalesced && coalesced.length ? coalesced : [e];
+
+      for (const ev of samples) {
+        const dx = lastX.current - ev.clientX;
+        const dy = lastY.current - ev.clientY;
+        lastX.current = ev.clientX;
+        lastY.current = ev.clientY;
+        const deltaProgress = (isTouch ? dy : dx) / divisor;
+        bump(deltaProgress);
+
+        if (isTouch) {
+          const now = ev.timeStamp || performance.now();
+          const dt = Math.max(1, now - lastMoveTs.current);
+          lastMoveTs.current = now;
+          // Recent-weighted average so the release velocity tracks the end
+          // of the swipe, not its whole history.
+          flingVelocity.current =
+            0.7 * (deltaProgress / dt) + 0.3 * flingVelocity.current;
+        }
       }
     };
 
     const endDrag = (e: PointerEvent) => {
+      const wasDragging = dragging.current;
       dragging.current = false;
       el.style.cursor = "";
       if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
+
+      if (
+        wasDragging &&
+        e.pointerType !== "mouse" &&
+        !reducedMotion &&
+        !cardOpenRef.current
+      ) {
+        flingVelocity.current = Math.max(
+          -MAX_FLING_VELOCITY,
+          Math.min(MAX_FLING_VELOCITY, flingVelocity.current)
+        );
+        if (Math.abs(flingVelocity.current) > MIN_FLING_VELOCITY) startFling();
+        else flingVelocity.current = 0;
+      }
     };
 
     el.addEventListener("wheel", onWheel, { passive: false });
@@ -204,6 +306,7 @@ export function Hero() {
     el.addEventListener("pointercancel", endDrag);
 
     return () => {
+      stopFling();
       el.removeEventListener("wheel", onWheel);
       el.removeEventListener("pointerdown", onPointerDown);
       el.removeEventListener("pointermove", onPointerMove);

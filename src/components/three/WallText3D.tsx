@@ -9,6 +9,10 @@ import type { GalleryFloor, WallText3D as WallTextEntry } from "@/lib/three/gall
 interface WallText3DProps {
   floor: GalleryFloor;
   progressRef: MutableRefObject<number>;
+  /** Phone-width viewport — captions shrink a touch and wrap sooner so a
+   *  long line like "SS Holdings Builders in Visakhapatnam" isn't cropped
+   *  by the narrow screen. */
+  isMobile?: boolean;
 }
 
 // A line eases in as the rail nears its `at`, and out again past it. Capped
@@ -41,14 +45,25 @@ const SIZE_PER_DISTANCE = 0.032;
 const MIN_FONT_SIZE = 0.14;
 const MAX_FONT_SIZE = 0.42;
 
+// How wide a caption grows before it wraps, as a multiple of its font size.
+// Phones wrap sooner so long lines break into narrower rows that clear the
+// screen edges even with the wider mobile FOV.
+const MAX_WIDTH_EMS = 11;
+const MAX_WIDTH_EMS_MOBILE = 7.5;
+// Phones also trim the font a touch so a wrapped 2–3 line caption still fits
+// between floor and ceiling.
+const MOBILE_FONT_SCALE = 0.9;
+
 function WallTextItem({
   entry,
   fadeWindow,
   progressRef,
+  isMobile = false,
 }: {
   entry: WallTextEntry;
   fadeWindow: number;
   progressRef: MutableRefObject<number>;
+  isMobile?: boolean;
 }) {
   const ref = useRef<ComponentRef<typeof Text>>(null);
   const fixedQuat = useRef<THREE.Quaternion | null>(
@@ -82,8 +97,8 @@ function WallTextItem({
       MAX_FONT_SIZE,
       Math.max(MIN_FONT_SIZE, distance * SIZE_PER_DISTANCE)
     );
-    node.fontSize = entry.fontSize ?? size;
-    node.maxWidth = node.fontSize * 11;
+    node.fontSize = (entry.fontSize ?? size) * (isMobile ? MOBILE_FONT_SCALE : 1);
+    node.maxWidth = node.fontSize * (isMobile ? MAX_WIDTH_EMS_MOBILE : MAX_WIDTH_EMS);
   });
 
   return (
@@ -113,7 +128,7 @@ function WallTextItem({
  * through mid-sentence — legibility wins over strict physical occlusion.
  * Each fades in/out around its own rail progress.
  */
-export function WallText3D({ floor, progressRef }: WallText3DProps) {
+export function WallText3D({ floor, progressRef, isMobile }: WallText3DProps) {
   if (!floor.wallTexts3D?.length) return null;
   const entries = floor.wallTexts3D;
   return (
@@ -124,6 +139,7 @@ export function WallText3D({ floor, progressRef }: WallText3DProps) {
           entry={entry}
           fadeWindow={fadeWindowFor(entries, i)}
           progressRef={progressRef}
+          isMobile={isMobile}
         />
       ))}
     </>

@@ -13,6 +13,9 @@ interface CameraPathRigProps {
   /** Normalised pointer, each axis ~ -1..1, for a small look-around parallax. */
   pointerRef: MutableRefObject<{ x: number; y: number }>;
   reducedMotion: boolean;
+  /** Vertical FOV (deg) to apply to the live camera — `floor.fov`, widened
+   *  on mobile so the walk-through frames more of each room. */
+  fov: number;
   /**
    * Written every frame with the damped progress actually driving the
    * camera — lags behind `progressRef` while easing catches up. Anything
@@ -48,6 +51,7 @@ export function CameraPathRig({
   progressRef,
   pointerRef,
   reducedMotion,
+  fov,
   smoothProgressRef,
   onReady,
 }: CameraPathRigProps) {
@@ -85,7 +89,7 @@ export function CameraPathRig({
     action.paused = false;
 
     if (camera instanceof THREE.PerspectiveCamera) {
-      camera.fov = floor.fov;
+      camera.fov = fov;
       camera.near = 0.1;
       camera.far = 1000;
       camera.updateProjectionMatrix();
@@ -95,7 +99,7 @@ export function CameraPathRig({
       mixer.stopAllAction();
       mixer.uncacheClip(clip);
     };
-  }, [mixer, clip, camera, floor.fov]);
+  }, [mixer, clip, camera, fov]);
 
   useFrame((_, rawDelta) => {
     if (!empty) return;

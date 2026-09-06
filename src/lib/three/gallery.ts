@@ -17,6 +17,13 @@ export const LOGO_URL = "/images/logo.jpg";
 /** Sound plays only on a button press (Floors / eye) and is cut after this. */
 export const CUE_SECONDS = 5;
 
+/**
+ * Phones widen every floor's baked FOV by this factor (~15% more of the room
+ * in frame). The desktop framing crops the wall captions on a narrow screen;
+ * desktop keeps the raw `floor.fov`.
+ */
+export const MOBILE_FOV_SCALE = 1.15;
+
 export const AUDIO = {
   click: "/audio/click.mp3",
   floor: "/audio/floor.mp3",

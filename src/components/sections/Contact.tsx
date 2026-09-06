@@ -8,7 +8,7 @@ export function Contact() {
   return (
     <section
       id="contact"
-      className="relative overflow-hidden border-t border-paper/10 bg-charcoal py-28 lg:py-36 text-paper"
+      className="relative overflow-hidden bg-charcoal py-16 text-paper sm:py-20 lg:py-24"
     >
       <SectionGlow tone="clay" />
       <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-10">
