@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "@fontsource/manrope/400.css";
 import "@fontsource/manrope/500.css";
 import "@fontsource/manrope/600.css";
@@ -49,10 +49,30 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f4eee4" },
+    { media: "(prefers-color-scheme: dark)", color: "#171310" },
+  ],
+};
+
+// Dark is the default room. This runs during HTML parsing — before first
+// paint — so a returning visitor who chose light never sees a dark flash.
+// See node_modules/next/dist/docs/.../preventing-flash-before-hydration.md
+const themeScript = `(function(){try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}})()`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className="h-full antialiased">
-      <body className="min-h-full flex flex-col bg-paper text-charcoal">
+    <html
+      lang="en"
+      data-theme="dark"
+      className="h-full antialiased"
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
+      <body className="min-h-full flex flex-col bg-bg text-fg">
         {children}
         <WhatsAppButton />
       </body>

@@ -4,7 +4,6 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { Reveal, RevealGroup, revealItemVariants } from "@/components/ui/Reveal";
-import { SectionGlow } from "@/components/ui/SectionGlow";
 
 // Dummy copy — swap each `question` / `answer` for the real FAQ content.
 const faqs = [
@@ -36,14 +35,13 @@ export function FAQ() {
   return (
     <section
       id="faq"
-      className="relative overflow-hidden bg-charcoal py-16 text-paper sm:py-20 lg:py-24"
+      className="relative overflow-hidden bg-bg py-13 text-fg sm:py-16 lg:py-20"
     >
-      <SectionGlow tone="slate" />
       <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-10">
         <div className="grid gap-10 md:grid-cols-12 md:gap-16">
           <Reveal className="md:col-span-4">
-            <div className="h-px w-10 bg-accent" />
-            <p className="mt-4 text-xs uppercase tracking-[0.3em] text-paper/50">
+            <div className="h-px w-12 bg-gradient-to-r from-accent to-transparent" />
+            <p className="mt-4 text-xs uppercase tracking-[0.3em] text-fg/50">
               Common Questions
             </p>
             <h2 className="font-display mt-4 text-3xl sm:text-4xl font-medium text-balance">
@@ -51,7 +49,7 @@ export function FAQ() {
             </h2>
           </Reveal>
 
-          <RevealGroup className="md:col-span-8 divide-y divide-paper/10 border-t border-paper/10">
+          <RevealGroup className="md:col-span-8 divide-y divide-fg/10 border-t border-fg/10">
             {faqs.map((faq, index) => {
               const isOpen = openIndex === index;
               return (
@@ -62,7 +60,7 @@ export function FAQ() {
                     aria-expanded={isOpen}
                     className="flex w-full items-center justify-between gap-6 py-6 text-left"
                   >
-                    <span className="font-display text-lg font-medium text-paper sm:text-xl">
+                    <span className="font-display text-lg font-medium text-fg sm:text-xl">
                       {faq.question}
                     </span>
                     <Plus
@@ -81,7 +79,7 @@ export function FAQ() {
                         transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                         className="overflow-hidden"
                       >
-                        <p className="max-w-2xl pb-6 text-paper/65 leading-relaxed">
+                        <p className="max-w-2xl pb-6 text-fg/65 leading-relaxed">
                           {faq.answer}
                         </p>
                       </motion.div>

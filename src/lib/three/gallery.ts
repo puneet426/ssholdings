@@ -61,6 +61,12 @@ export interface WallText3D {
   /** World-space point on (or just off) the wall, in the floor's own scene units. */
   position: [number, number, number];
   /**
+   * Phone-only anchor override. When set, narrow viewports use this point
+   * instead of `position` — e.g. the opening title is lifted onto the black
+   * ceiling band on mobile while desktop keeps its wall placement.
+   */
+  positionMobile?: [number, number, number];
+  /**
    * Fixed Euler rotation (radians, XYZ order) that lays the text flush
    * against its wall — a sticker, not a billboard. Captured alongside
    * `position` by DevPlacementHelper. Omit to fall back to facing the
@@ -69,6 +75,8 @@ export interface WallText3D {
   rotation?: [number, number, number];
   /** World-unit character height — auto-sized by distance from camera if omitted. */
   fontSize?: number;
+  /** Faux-bold — thickens the strokes with a same-colour stroke pass. */
+  bold?: boolean;
   text: string;
 }
 
@@ -213,7 +221,14 @@ export const FLOORS: GalleryFloor[] = [
     // share a spot, each centred on that moment's sightline (ff-wall-4 nudged
     // off the centre column). ff-wall-2/7/8/9 are the hand-placed originals.
     wallTexts3D: [
-      { id: "ff-wall-1", at: 0.00, position: [-8.00, 3.00, -5.90], text: "SS Holdings Builders in Visakhapatnam" },
+      {
+        id: "ff-wall-1",
+        at: 0.00,
+        position: [-8.00, 3.00, -5.90],
+        positionMobile: [-8.00, 3.60, -5.90],
+        bold: true,
+        text: "SS Holdings\nBuilders in Visakhapatnam",
+      },
       { id: "ff-wall-2", at: 0.15, position: [-13.51, 2.60, 3.74], rotation: [0.00, -1.57, 0.00], text: "Designed and built as per Vastu Principles" },
       { id: "ff-wall-3", at: 0.28, position: [-11.80, 2.90, 6.10], rotation: [0.00, 0.00, 0.00], text: "Address of Quality" },
       { id: "ff-wall-4", at: 0.40, position: [-1.20, 3.00, 6.60], rotation: [0.00, 0.00, 0.00], text: "35+ Projects Delivered on time Every Time" },

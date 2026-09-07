@@ -47,13 +47,13 @@ function validate(values: EnquiryFormValues): FormErrors {
 }
 
 const fieldClasses =
-  "mt-2 w-full rounded-xl border border-paper/15 bg-paper/[0.04] px-4 py-3 text-sm text-paper placeholder:text-paper/35 outline-none transition-colors focus:border-accent-soft/50 focus:bg-paper/[0.06]";
+  "mt-2 w-full rounded-xl border border-fg/15 bg-fg/[0.04] px-4 py-3 text-sm text-fg placeholder:text-fg/35 outline-none transition-colors focus:border-accent-soft/50 focus:bg-fg/[0.06]";
 
 function FieldLabel({ htmlFor, children }: { htmlFor: string; children: ReactNode }) {
   return (
     <label
       htmlFor={htmlFor}
-      className="text-xs uppercase tracking-[0.2em] text-paper/50"
+      className="text-xs uppercase tracking-[0.2em] text-fg/50"
     >
       {children}
     </label>
@@ -104,9 +104,9 @@ export function EnquiryForm() {
   }
 
   return (
-    <div className="rounded-2xl border border-paper/10 bg-paper/[0.03] p-6 sm:p-10">
+    <div className="rounded-xl border border-fg/10 bg-fg/[0.03] p-6 sm:p-10">
       {submitted && (
-        <div className="mb-8 flex items-start gap-3 rounded-xl border border-accent-soft/30 bg-accent-soft/10 p-4 text-sm text-paper">
+        <div className="mb-8 flex items-start gap-3 rounded-xl border border-accent-soft/30 bg-accent-soft/10 p-4 text-sm text-fg">
           <CheckCircle2
             className="mt-0.5 h-5 w-5 shrink-0 text-accent-soft"
             strokeWidth={1.5}
@@ -182,21 +182,21 @@ export function EnquiryForm() {
                       errors.subject ? "enquiry-subject-error" : undefined
                     }
                   >
-                    <option value="" disabled className="bg-charcoal text-paper/50">
+                    <option value="" disabled className="bg-bg text-fg/50">
                       Select an option
                     </option>
                     {subjectOptions.map((option) => (
                       <option
                         key={option}
                         value={option}
-                        className="bg-charcoal text-paper"
+                        className="bg-bg text-fg"
                       >
                         {option}
                       </option>
                     ))}
                   </select>
                   <ChevronDown
-                    className="pointer-events-none absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2 text-paper/40"
+                    className="pointer-events-none absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2 text-fg/40"
                     strokeWidth={1.5}
                   />
                 </div>
@@ -222,7 +222,7 @@ export function EnquiryForm() {
             <div className="flex justify-center pt-2">
               <button
                 type="submit"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-paper px-8 py-3 text-sm font-medium text-ink transition-transform hover:scale-[1.03]"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-inverse px-8 py-3 text-sm font-medium text-inverse-fg transition-transform hover:scale-[1.03]"
               >
                 Submit Enquiry
               </button>

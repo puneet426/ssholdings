@@ -2,7 +2,6 @@
 
 import { Reveal, RevealGroup, revealItemVariants } from "@/components/ui/Reveal";
 import { motion } from "framer-motion";
-import { SectionGlow } from "@/components/ui/SectionGlow";
 
 const reasons = [
   {
@@ -23,12 +22,11 @@ export function WhyUs() {
   return (
     <section
       id="why"
-      className="relative overflow-hidden bg-charcoal py-16 text-paper sm:py-20 lg:py-24"
+      className="relative overflow-hidden bg-bg py-13 text-fg sm:py-16 lg:py-20"
     >
-      <SectionGlow tone="copper" />
       <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-10">
         <Reveal className="max-w-xl">
-          <p className="text-xs uppercase tracking-[0.3em] text-paper/50">
+          <p className="text-xs uppercase tracking-[0.3em] text-fg/50">
             Why SS Holdings
           </p>
           <h2 className="font-display mt-4 text-3xl sm:text-4xl font-medium text-balance">
@@ -39,11 +37,11 @@ export function WhyUs() {
         <RevealGroup className="mt-14 grid gap-10 sm:grid-cols-3">
           {reasons.map((reason) => (
             <motion.div key={reason.title} variants={revealItemVariants}>
-              <div className="h-px w-10 bg-accent" />
+              <div className="h-px w-12 bg-gradient-to-r from-accent to-transparent" />
               <h3 className="font-display mt-5 text-lg font-medium">
                 {reason.title}
               </h3>
-              <p className="mt-3 text-sm text-paper/65 leading-relaxed">
+              <p className="mt-3 text-sm text-fg/65 leading-relaxed">
                 {reason.body}
               </p>
             </motion.div>

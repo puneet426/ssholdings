@@ -101,6 +101,7 @@ function WallTextItem({
     }
     node.fillOpacity = vis;
     node.outlineOpacity = vis;
+    node.strokeOpacity = vis;
     node.visible = vis > 0.01;
 
     // Force "always on top" on troika's real render materials. Once an
@@ -125,19 +126,33 @@ function WallTextItem({
       Math.max(MIN_FONT_SIZE, distance * SIZE_PER_DISTANCE)
     );
     node.fontSize = (entry.fontSize ?? size) * (isMobile ? MOBILE_FONT_SCALE : 1);
-    node.maxWidth = node.fontSize * (isMobile ? MAX_WIDTH_EMS_MOBILE : MAX_WIDTH_EMS);
+    // Text with its own hard line breaks is laid out as written — no auto-wrap
+    // on top, so "SS Holdings\nBuilders in Visakhapatnam" stays two lines.
+    node.maxWidth = entry.text.includes("\n")
+      ? Infinity
+      : node.fontSize * (isMobile ? MAX_WIDTH_EMS_MOBILE : MAX_WIDTH_EMS);
   });
+
+  // Phones can lift a caption to its own anchor (e.g. the opening title onto
+  // the ceiling band) while desktop keeps the wall placement.
+  const position =
+    isMobile && entry.positionMobile ? entry.positionMobile : entry.position;
 
   return (
     <Text
       ref={ref}
-      position={entry.position}
+      position={position}
       renderOrder={999}
       color="#f7f5f2"
       anchorX="center"
       anchorY="middle"
       textAlign="center"
       fillOpacity={0}
+      // Faux-bold: a same-colour stroke pass fattens the glyphs since the
+      // default troika face has no bold weight bundled.
+      strokeWidth={entry.bold ? "2.5%" : 0}
+      strokeColor="#f7f5f2"
+      strokeOpacity={0}
       // A dark keyline so the lettering reads as a decal stuck on the wall
       // and stays legible over any surface behind it.
       outlineWidth="4%"

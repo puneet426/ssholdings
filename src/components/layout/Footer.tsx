@@ -54,23 +54,27 @@ const socialLinks = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-paper/10 bg-charcoal text-paper">
+    <footer className="bg-bg text-fg">
       <div className="mx-auto max-w-7xl px-6 py-14 lg:px-10 lg:py-16">
         <div className="grid gap-10 md:grid-cols-12 md:gap-8">
           {/* Brand */}
           <div className="md:col-span-5">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-paper p-1.5 shadow-sm">
+            {/* The logo asset is a white-background JPG, so the plate is
+               always white in both themes — a dark plate in light mode left
+               a stark white square floating inside it. The hairline ring
+               gives the card an edge on the dark footer too. */}
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white p-1 shadow-sm ring-1 ring-black/10">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/images/logo.jpg"
                 alt="SS Holdings"
-                className="h-full w-full rounded-md object-contain"
+                className="h-full w-full rounded-lg object-contain"
               />
             </div>
-            <p className="font-display mt-4 text-sm font-semibold tracking-[0.15em] text-paper">
+            <p className="font-display mt-4 text-sm font-semibold tracking-[0.15em] text-fg">
               SS&nbsp;HOLDINGS
             </p>
-            <p className="mt-3 max-w-xs text-sm leading-relaxed text-paper/60">
+            <p className="mt-3 max-w-xs text-sm leading-relaxed text-fg/60">
               Designed for spaces that last.
             </p>
 
@@ -88,7 +92,7 @@ export function Footer() {
                         ? "Email SS Holdings"
                         : `SS Holdings on ${social.label}`
                     }
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-paper/15 text-paper/70 transition-colors hover:border-paper/30 hover:text-paper"
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-fg/15 text-fg/70 transition-colors hover:border-fg/30 hover:text-fg"
                   >
                     <social.icon className="h-4 w-4" strokeWidth={1.5} />
                   </a>
@@ -99,7 +103,7 @@ export function Footer() {
 
           {/* Navigation */}
           <div className="md:col-span-3">
-            <p className="text-xs uppercase tracking-[0.25em] text-paper/40">
+            <p className="text-xs uppercase tracking-[0.25em] text-fg/40">
               Explore
             </p>
             <nav aria-label="Footer" className="mt-4">
@@ -108,7 +112,7 @@ export function Footer() {
                   <li key={link.href}>
                     <a
                       href={link.href}
-                      className="text-sm text-paper/70 transition-colors hover:text-paper"
+                      className="text-sm text-fg/70 transition-colors hover:text-fg"
                     >
                       {link.label}
                     </a>
@@ -120,10 +124,10 @@ export function Footer() {
 
           {/* Contact + WhatsApp CTA */}
           <div className="md:col-span-4">
-            <p className="text-xs uppercase tracking-[0.25em] text-paper/40">
+            <p className="text-xs uppercase tracking-[0.25em] text-fg/40">
               Get in Touch
             </p>
-            <ul className="mt-4 space-y-3 text-sm text-paper/70">
+            <ul className="mt-4 space-y-3 text-sm text-fg/70">
               <li className="flex items-start gap-2.5">
                 <MapPin
                   className="mt-0.5 h-4 w-4 shrink-0 text-accent-soft"
@@ -138,7 +142,7 @@ export function Footer() {
                 />
                 <a
                   href={`tel:${siteConfig.contact.phone.replace(/\s+/g, "")}`}
-                  className="transition-colors hover:text-paper"
+                  className="transition-colors hover:text-fg"
                 >
                   {siteConfig.contact.phone}
                 </a>
@@ -150,7 +154,7 @@ export function Footer() {
                 />
                 <a
                   href={`mailto:${siteConfig.contact.email}`}
-                  className="transition-colors hover:text-paper"
+                  className="transition-colors hover:text-fg"
                 >
                   {siteConfig.contact.email}
                 </a>
@@ -161,7 +165,7 @@ export function Footer() {
               href={siteConfig.whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-6 inline-flex items-center gap-2 rounded-full bg-paper px-6 py-3 text-sm font-medium text-ink transition-transform hover:scale-[1.03]"
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-inverse px-6 py-3 text-sm font-medium text-inverse-fg transition-transform hover:scale-[1.03]"
             >
               Enquire on WhatsApp
               <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
@@ -169,7 +173,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-paper/10 pt-6 text-xs leading-relaxed text-paper/50">
+        <div className="mt-12 border-t border-fg/10 pt-6 text-xs leading-relaxed text-fg/50">
           Copyright &copy; {new Date().getFullYear()}. SS Holdings Private
           Limited. All rights reserved.
         </div>

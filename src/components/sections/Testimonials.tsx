@@ -4,7 +4,6 @@ import { useState, useCallback } from "react";
 import type { CSSProperties } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { BadgeCheck, Play, X } from "lucide-react";
-import { SectionGlow } from "@/components/ui/SectionGlow";
 
 
 type TileType = "photo" | "video" | "text";
@@ -307,7 +306,7 @@ function CollageTile({
   const baseStyle = tileStyle(layout, base);
 
   const cardClasses =
-    "group cursor-pointer overflow-hidden rounded-sm border-2 border-paper box-border shadow-[0_2px_8px_rgba(0,0,0,0.25)] bg-ink";
+    "group cursor-pointer overflow-hidden rounded-sm border-2 border-inverse box-border shadow-[0_2px_8px_rgba(0,0,0,0.25)] bg-well";
 
   if (content.type === "text") {
     return (
@@ -316,10 +315,10 @@ function CollageTile({
         {...hover}
         style={{ ...baseStyle, rotate: layout.rotation }}
         onClick={() => onOpen(content)}
-        className={`${cardClasses} flex flex-col justify-between p-3 ${
+        className={`group cursor-pointer box-border flex flex-col justify-between overflow-hidden rounded-sm border-2 p-3 shadow-[0_2px_8px_rgba(0,0,0,0.25)] text-fg ${
           content.featured
-            ? "bg-paper text-ink"
-            : "bg-charcoal text-paper"
+            ? "border-accent bg-[color-mix(in_oklab,var(--color-accent)_9%,var(--color-bg))]"
+            : "border-inverse bg-bg"
         }`}
       >
         <p className="text-balance text-[clamp(11px,1.4vw,14px)] font-medium leading-snug">
@@ -327,23 +326,19 @@ function CollageTile({
         </p>
         <div className="flex items-center gap-1.5">
           <div className="min-w-0">
-            <p className="truncate text-[clamp(9px,1.05vw,12px)] font-semibold">
-              {content.customerName}
-            </p>
             <p
-              className={`truncate text-[clamp(8px,0.9vw,10px)] ${
-                content.featured ? "text-stone-dark" : "text-paper/70"
+              className={`truncate text-[clamp(9px,1.05vw,12px)] font-semibold ${
+                content.featured ? "text-accent" : ""
               }`}
             >
+              {content.customerName}
+            </p>
+            <p className="truncate text-[clamp(8px,0.9vw,10px)] text-fg/70">
               {content.location}
             </p>
           </div>
           {content.verified && (
-            <BadgeCheck
-              className={`ml-auto h-3.5 w-3.5 shrink-0 ${
-                content.featured ? "text-accent" : "text-accent-soft"
-              }`}
-            />
+            <BadgeCheck className="ml-auto h-3.5 w-3.5 shrink-0 text-accent-soft" />
           )}
         </div>
       </motion.div>
@@ -359,7 +354,7 @@ function CollageTile({
       {...hover}
       style={{ ...baseStyle, rotate: layout.rotation }}
       onClick={() => onOpen(content)}
-      className={`${cardClasses} bg-paper`}
+      className={`${cardClasses} bg-well`}
     >
       {content.image && (
         // Default: cropped to fill the tile, like the reference collage.
@@ -372,28 +367,28 @@ function CollageTile({
           src={content.image}
           alt={content.customerName ?? "Customer"}
           loading="lazy"
-          className="h-full w-full bg-ink object-cover object-center transition-[object-fit] duration-200 ease-out group-hover:object-contain group-focus-visible:object-contain"
+          className="h-full w-full bg-well object-cover object-center transition-[object-fit] duration-200 ease-out group-hover:object-contain group-focus-visible:object-contain"
         />
       )}
 
       {content.type === "video" && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-ink/10">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-paper/90 shadow-md transition-transform duration-200 group-hover:scale-110 sm:h-10 sm:w-10">
-            <Play className="ml-0.5 h-4 w-4 fill-ink text-ink" />
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-well/10">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-inverse/95 shadow-md transition-transform duration-200 group-hover:scale-110 sm:h-10 sm:w-10">
+            <Play className="ml-0.5 h-4 w-4 fill-inverse-fg text-inverse-fg" />
           </div>
         </div>
       )}
 
       {/* Always-visible profile + name strip, Instagram-tag style */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center gap-1.5 bg-gradient-to-t from-ink/85 via-ink/30 to-transparent px-2 py-1.5">
-        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-paper/70 bg-charcoal text-[9px] font-semibold text-paper">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center gap-1.5 bg-gradient-to-t from-well/85 via-well/30 to-transparent px-2 py-1.5">
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-fg/70 bg-bg text-[9px] font-semibold text-fg">
           {initial}
         </div>
-        <p className="truncate text-[10px] font-semibold text-paper drop-shadow sm:text-xs">
+        <p className="truncate text-[10px] font-semibold text-fg drop-shadow sm:text-xs">
           {content.customerName}
         </p>
         {content.verified && (
-          <BadgeCheck className="ml-auto h-3.5 w-3.5 shrink-0 text-paper drop-shadow" />
+          <BadgeCheck className="ml-auto h-3.5 w-3.5 shrink-0 text-fg drop-shadow" />
         )}
       </div>
     </motion.div>
@@ -417,7 +412,7 @@ function Lightbox({
       exit={{ opacity: 0 }}
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/85 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[color-mix(in_oklab,#0b0a09_80%,transparent)] p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <motion.div
@@ -425,18 +420,18 @@ function Lightbox({
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.94, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-md overflow-hidden rounded-xl border border-paper/10 bg-charcoal shadow-2xl sm:max-w-xl"
+        className="relative w-full max-w-md overflow-hidden rounded-xl border border-fg/10 bg-bg shadow-2xl sm:max-w-xl"
       >
         <button
           onClick={onClose}
           aria-label="Close"
-          className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-ink/60 text-paper backdrop-blur-md transition-colors hover:bg-ink/90"
+          className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-well/60 text-fg backdrop-blur-md transition-colors hover:bg-well/90"
         >
           <X className="h-5 w-5" />
         </button>
 
         {isMedia && (
-          <div className="relative aspect-[4/5] w-full bg-ink sm:aspect-video">
+          <div className="relative aspect-[4/5] w-full bg-well sm:aspect-video">
             {hasVideo ? (
               <video
                 src={content.video}
@@ -459,21 +454,21 @@ function Lightbox({
           </div>
         )}
 
-        <div className="p-5 text-paper">
+        <div className="p-5 text-fg">
           <div className="flex items-center justify-between gap-4">
             <div>
               <h3 className="text-base font-semibold leading-tight">{content.customerName}</h3>
-              <p className="mt-0.5 text-xs text-paper/50">{content.location}</p>
+              <p className="mt-0.5 text-xs text-fg/50">{content.location}</p>
             </div>
             {content.verified && (
-              <span className="flex items-center gap-1 text-xs text-paper/60">
+              <span className="flex items-center gap-1 text-xs text-fg/60">
                 <BadgeCheck className="h-4 w-4 text-accent" />
                 Verified
               </span>
             )}
           </div>
           {content.quote && (
-            <p className="mt-4 border-t border-paper/10 pt-3 text-sm italic leading-relaxed text-paper/70">
+            <p className="mt-4 border-t border-fg/10 pt-3 text-sm italic leading-relaxed text-fg/70">
               &ldquo;{content.quote}&rdquo;
             </p>
           )}
@@ -494,13 +489,12 @@ export function Testimonials() {
   return (
     <section
       id="testimonials"
-      className="relative overflow-hidden bg-charcoal py-16 text-paper sm:py-20 lg:py-24"
+      className="relative overflow-hidden bg-panel py-13 text-fg sm:py-16 lg:py-20"
     >
-      <SectionGlow tone="clay" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-10">
         <div className="mx-auto mb-8 max-w-2xl text-center sm:mb-12">
-          <p className="text-xs uppercase tracking-[0.3em] text-paper/50">Testimonials</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-fg/50">Testimonials</p>
           <h2 className="font-display mt-3 text-balance text-2xl font-medium sm:text-3xl lg:text-4xl">
             Real experiences from the people we build for.
           </h2>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Menu, X, Search } from "lucide-react";
 import { navLinks } from "@/data/nav";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { MobileMenu } from "./MobileMenu";
 
 export function Header() {
@@ -21,7 +22,7 @@ export function Header() {
       <header
         className={`fixed top-0 inset-x-0 z-50 transition-colors duration-500 ${
           scrolled
-            ? "bg-charcoal/90 backdrop-blur-md border-b border-paper/10"
+            ? "bg-bg/90 backdrop-blur-md border-b border-fg/10"
             : "bg-transparent"
         }`}
       >
@@ -32,7 +33,7 @@ export function Header() {
           >
             <a
               href="/#top"
-              className="font-display font-semibold tracking-[0.15em] text-sm sm:text-base text-paper"
+              className="font-display font-semibold tracking-[0.15em] text-sm sm:text-base text-fg"
             >
               SS&nbsp;HOLDINGS
             </a>
@@ -42,7 +43,7 @@ export function Header() {
                 <li key={link.href}>
                   <a
                     href={link.href}
-                    className="text-sm tracking-wide text-paper/80 transition-colors hover:text-paper"
+                    className="text-sm tracking-wide text-fg/80 transition-colors hover:text-fg"
                   >
                     {link.label}
                   </a>
@@ -50,20 +51,21 @@ export function Header() {
               ))}
             </ul>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-3">
               <button
                 type="button"
                 aria-label="Search"
-                className="hidden sm:flex h-9 w-9 items-center justify-center rounded-full text-paper transition-colors hover:bg-paper/10"
+                className="hidden sm:flex h-9 w-9 items-center justify-center rounded-full text-fg transition-colors hover:bg-fg/10"
               >
                 <Search className="h-4 w-4" strokeWidth={1.5} />
               </button>
+              <ThemeToggle />
               <button
                 type="button"
                 aria-label={menuOpen ? "Close menu" : "Open menu"}
                 aria-expanded={menuOpen}
                 onClick={() => setMenuOpen((v) => !v)}
-                className="flex md:hidden h-9 w-9 items-center justify-center rounded-full text-paper transition-colors hover:bg-paper/10"
+                className="flex md:hidden h-9 w-9 items-center justify-center rounded-full text-fg transition-colors hover:bg-fg/10"
               >
                 {menuOpen ? (
                   <X className="h-5 w-5" strokeWidth={1.5} />

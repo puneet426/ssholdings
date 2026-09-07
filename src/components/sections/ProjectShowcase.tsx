@@ -3,7 +3,6 @@
 import { useEffect, useRef } from "react";
 import { useInView } from "framer-motion";
 import { Reveal } from "@/components/ui/Reveal";
-import { SectionGlow } from "@/components/ui/SectionGlow";
 import { showcaseVideos } from "@/data/projectShowcase";
 import { projectVideoPoster, projectVideoUrl } from "@/lib/cloudinary";
 
@@ -61,7 +60,7 @@ function ShowcaseVideo({ path }: { path: string }) {
     return (
       <div
         ref={wrapRef}
-        className="aspect-1886/1060 rounded-2xl border border-dashed border-paper/15 bg-paper/3"
+        className="aspect-1886/1060 rounded-xl border border-dashed border-fg/15 bg-fg/3"
       />
     );
   }
@@ -69,7 +68,7 @@ function ShowcaseVideo({ path }: { path: string }) {
   return (
     <div
       ref={wrapRef}
-      className="aspect-1886/1060 overflow-hidden rounded-2xl border border-paper/10 bg-ink"
+      className="aspect-1886/1060 overflow-hidden rounded-xl border border-fg/10 bg-well"
     >
       <video
         ref={videoRef}
@@ -88,13 +87,12 @@ export function ProjectShowcase() {
   return (
     <section
       id="project-showcase"
-      className="relative overflow-hidden bg-charcoal py-16 text-paper sm:py-20 lg:py-24"
+      className="relative overflow-hidden bg-panel py-13 text-fg sm:py-16 lg:py-20"
     >
-      <SectionGlow tone="slate" />
       <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-10">
         <Reveal className="mb-10 max-w-2xl lg:mb-14">
-          <div className="h-px w-10 bg-accent" />
-          <p className="mt-4 text-xs uppercase tracking-[0.3em] text-paper/50">
+          <div className="h-px w-12 bg-gradient-to-r from-accent to-transparent" />
+          <p className="mt-4 text-xs uppercase tracking-[0.3em] text-fg/50">
             A Closer Look
           </p>
           <h2 className="font-display mt-4 text-3xl sm:text-4xl font-medium text-balance">

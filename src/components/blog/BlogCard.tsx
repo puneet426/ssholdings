@@ -10,9 +10,9 @@ export function BlogCard({ post }: { post: BlogPost }) {
   return (
     <Link
       href={`/blogs/${post.slug}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-paper/10 bg-paper/[0.04] transition-colors hover:border-paper/20 hover:bg-paper/[0.07]"
+      className="group flex flex-col overflow-hidden rounded-xl border border-fg/10 bg-fg/[0.04] transition-colors hover:border-fg/20 hover:bg-fg/[0.07]"
     >
-      <div className="aspect-16/10 w-full overflow-hidden bg-ink">
+      <div className="aspect-16/10 w-full overflow-hidden bg-well">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={post.image}
@@ -21,13 +21,13 @@ export function BlogCard({ post }: { post: BlogPost }) {
         />
       </div>
       <div className="flex flex-1 flex-col p-6">
-        <p className="text-xs uppercase tracking-[0.25em] text-paper/50">
+        <p className="text-xs uppercase tracking-[0.25em] text-fg/50">
           {post.date}
         </p>
         <h3 className="font-display mt-3 text-xl font-medium leading-snug text-balance">
           {post.title}
         </h3>
-        <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-paper/65">
+        <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-fg/65">
           {post.description}
         </p>
         <span className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-accent-soft">

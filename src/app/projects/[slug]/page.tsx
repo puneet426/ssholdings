@@ -4,7 +4,6 @@ import Link from "next/link";
 import { ArrowLeft, Calendar, MapPin, Ruler, Tag } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { SectionGlow } from "@/components/ui/SectionGlow";
 import { projects, getProjectBySlug, type Project } from "@/data/projects";
 
 const STATUS_STYLES: Record<Project["status"], string> = {
@@ -47,21 +46,20 @@ export default async function ProjectDetailsPage({
     <>
       <Header />
       <main className="flex-1">
-        <article className="relative overflow-hidden bg-charcoal pt-32 pb-20 text-paper lg:pt-40 lg:pb-28">
-          <SectionGlow tone="clay" />
+        <article className="relative overflow-hidden bg-bg pt-32 pb-16 text-fg lg:pt-40 lg:pb-24">
           <div className="relative z-10 mx-auto max-w-5xl px-6 lg:px-10">
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
               <Link
                 href="/"
-                className="inline-flex items-center gap-2 text-sm text-paper/60 transition-colors hover:text-paper"
+                className="inline-flex items-center gap-2 text-sm text-fg/60 transition-colors hover:text-fg"
               >
                 <ArrowLeft className="h-4 w-4" strokeWidth={1.5} />
                 Back to Home
               </Link>
-              <span className="h-4 w-px bg-paper/15" aria-hidden="true" />
+              <span className="h-4 w-px bg-fg/15" aria-hidden="true" />
               <Link
                 href="/projects"
-                className="inline-flex items-center gap-2 text-sm text-paper/60 transition-colors hover:text-paper"
+                className="inline-flex items-center gap-2 text-sm text-fg/60 transition-colors hover:text-fg"
               >
                 <ArrowLeft className="h-4 w-4" strokeWidth={1.5} />
                 Back to Projects
@@ -70,11 +68,11 @@ export default async function ProjectDetailsPage({
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <span
-                className={`rounded-full border bg-ink/40 px-3 py-1 text-xs font-medium ${STATUS_STYLES[project.status]}`}
+                className={`rounded-full border bg-well/40 px-3 py-1 text-xs font-medium ${STATUS_STYLES[project.status]}`}
               >
                 {project.status}
               </span>
-              <p className="text-xs uppercase tracking-[0.3em] text-paper/50">
+              <p className="text-xs uppercase tracking-[0.3em] text-fg/50">
                 {project.year}
               </p>
             </div>
@@ -87,14 +85,14 @@ export default async function ProjectDetailsPage({
               {project.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-full border border-paper/15 bg-paper/5 px-3 py-1 text-xs text-paper/70"
+                  className="rounded-full border border-fg/15 bg-fg/5 px-3 py-1 text-xs text-fg/70"
                 >
                   {tag}
                 </span>
               ))}
             </div>
 
-            <div className="mt-10 aspect-16/9 w-full overflow-hidden rounded-2xl border border-paper/10 bg-ink">
+            <div className="mt-10 aspect-16/9 w-full overflow-hidden rounded-xl border border-fg/10 bg-well">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={project.image}
@@ -103,22 +101,22 @@ export default async function ProjectDetailsPage({
               />
             </div>
 
-            <div className="mt-10 grid grid-cols-2 gap-6 rounded-2xl border border-paper/10 bg-paper/[0.04] p-6 sm:grid-cols-4">
+            <div className="mt-10 grid grid-cols-2 gap-6 rounded-xl border border-fg/10 bg-fg/[0.04] p-6 sm:grid-cols-4">
               {facts.map((fact) => (
                 <div key={fact.label} className="flex flex-col gap-2">
                   <fact.icon
                     className="h-5 w-5 text-accent-soft"
                     strokeWidth={1.5}
                   />
-                  <p className="text-xs text-paper/50">{fact.label}</p>
-                  <p className="text-sm font-medium text-paper">
+                  <p className="text-xs text-fg/50">{fact.label}</p>
+                  <p className="text-sm font-medium text-fg">
                     {fact.value}
                   </p>
                 </div>
               ))}
             </div>
 
-            <div className="mt-12 space-y-6 leading-relaxed text-paper/75">
+            <div className="mt-12 space-y-6 leading-relaxed text-fg/75">
               {project.content.map((paragraph, i) => (
                 <p key={i}>{paragraph}</p>
               ))}

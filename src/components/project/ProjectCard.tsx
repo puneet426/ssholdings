@@ -16,9 +16,9 @@ export function ProjectCard({ project }: { project: Project }) {
   return (
     <Link
       href={`/projects/${project.slug}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-paper/10 bg-paper/[0.04] transition-colors hover:border-paper/20 hover:bg-paper/[0.07]"
+      className="group flex flex-col overflow-hidden rounded-xl border border-fg/10 bg-fg/[0.04] transition-colors hover:border-fg/20 hover:bg-fg/[0.07]"
     >
-      <div className="relative aspect-16/10 w-full overflow-hidden bg-ink">
+      <div className="relative aspect-16/10 w-full overflow-hidden bg-well">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={project.image}
@@ -26,21 +26,21 @@ export function ProjectCard({ project }: { project: Project }) {
           className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
         />
         <span
-          className={`absolute left-4 top-4 rounded-full border bg-ink/70 px-3 py-1 text-xs font-medium backdrop-blur-sm ${STATUS_STYLES[project.status]}`}
+          className={`absolute left-4 top-4 rounded-full border bg-well/70 px-3 py-1 text-xs font-medium backdrop-blur-sm ${STATUS_STYLES[project.status]}`}
         >
           {project.status}
         </span>
       </div>
       <div className="flex flex-1 flex-col p-6">
-        <p className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.2em] text-paper/50">
+        <p className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.2em] text-fg/50">
           <MapPin className="h-3.5 w-3.5" strokeWidth={1.5} />
           {project.location}
         </p>
         <h3 className="font-display mt-3 text-xl font-medium leading-snug text-balance">
           {project.name}
         </h3>
-        <p className="mt-1 text-xs text-paper/50">{project.type}</p>
-        <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-paper/65">
+        <p className="mt-1 text-xs text-fg/50">{project.type}</p>
+        <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-fg/65">
           {project.description}
         </p>
         <span className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-accent-soft">
