@@ -1,6 +1,11 @@
 "use client";
 
-import { useRef, type ComponentRef, type MutableRefObject } from "react";
+import {
+  useMemo,
+  useRef,
+  type ComponentRef,
+  type MutableRefObject,
+} from "react";
 import { useFrame } from "@react-three/fiber";
 import { Text } from "@react-three/drei";
 import * as THREE from "three";
@@ -8,27 +13,39 @@ import type { GalleryFloor, WallText3D as WallTextEntry } from "@/lib/three/gall
 
 interface WallText3DProps {
   floor: GalleryFloor;
+  /** The eased progress actually driving the camera — what stickers fade on. */
   progressRef: MutableRefObject<number>;
+  /**
+   * The raw scroll target, ahead of the eased camera. A `vanishBy` caption
+   * fades on this instead, so it is gone before the room visibly moves.
+   * Defaults to `progressRef`.
+   */
+  targetProgressRef?: MutableRefObject<number>;
   /** Phone-width viewport — captions shrink a touch and wrap sooner so a
    *  long line like "SS Holdings Builders in Visakhapatnam" isn't cropped
    *  by the narrow screen. */
   isMobile?: boolean;
 }
 
-// A line eases in as the rail nears its `at`, and out again past it. Windows
-// are trimmed against their neighbours (see `spans`) so two captions never
-// both hold nonzero opacity — two on screen together is the one thing this
-// component exists to avoid.
-const FADE_WINDOW = 0.09;
+// A caption is a sticker on its wall: it is there whenever the wall is, and
+// gone only when the wall is — out of frame, turned away, or hidden behind
+// something. So its opacity is not a timer around `at`; it is 1 across the
+// entry's `visible` range, which is the measured stretch of the rail over
+// which that wall is actually in view, and 0 outside it. Two stickers on
+// screen at once is normal — two walls in view is what a room looks like —
+// so there is no handover, no crossfade, and nothing is ever taken off a wall
+// you can still see.
+//
+// Half the fallback window for an entry with no measured `visible` range —
+// centred on its `at`, and only there until the range is measured.
+const HOLD_HALF = 0.0585;
 
-// Sticker, not strobe: hold the caption at full opacity through most of its
-// window and only ramp over the outer edge, so it stays planted on the wall
-// while you scroll past rather than pulsing in and out.
-const HOLD_FRACTION = 0.65;
-// The default window split into its two parts: the opaque middle and the ramp
-// on either side of it.
-const HOLD_HALF = FADE_WINDOW * HOLD_FRACTION;
-const FADE_EDGE = FADE_WINDOW * (1 - HOLD_FRACTION);
+// The ramp at each edge of the range. It is not a fade you are meant to
+// notice: the range ends where the wall leaves the frame or goes behind
+// something, so this only softens the last couple of frames against a
+// one-frame pop. Anything longer would be visible as the caption dimming while
+// its wall is still there — the one thing a sticker must never do.
+const FADE_EDGE = 0.005;
 
 /** Resolved rail range for one caption: transparent before `in0`, ramping to
  *  opaque at `in1`, planted until `out0`, back to transparent at `out1`. */
@@ -39,53 +56,17 @@ interface Span {
   out1: number;
 }
 
-/**
- * Turn the entries' `at` / `hold` into non-overlapping spans.
- *
- * A caption's opaque stretch is its `hold` when it declares one — the wall it
- * is stuck to is only square in frame over that part of the walk — otherwise
- * a symmetric window around `at`. Where two of those stretches crowd each
- * other the pair is split at the midpoint with a ramp's worth of clearance on
- * each side, so one caption has always finished fading out before the next
- * starts fading in. A declared `hold` is never trimmed — space is taken from
- * the default windows around it.
- */
+/** One span per entry, straight from its `visible` range — no trimming
+ *  against neighbours, since overlap is allowed. */
 function spans(entries: WallTextEntry[]): Span[] {
-  const holds: [number, number][] = entries.map((e) =>
-    e.hold ? [e.hold[0], e.hold[1]] : [e.at - HOLD_HALF, e.at + HOLD_HALF]
-  );
-  // How far trimming may go: a declared `hold` is kept whole, while a default
-  // window may collapse all the way to its `at`.
-  const keep: [number, number][] = entries.map((e) =>
-    e.hold ? [e.hold[0], e.hold[1]] : [e.at, e.at]
-  );
-
-  for (let i = 1; i < holds.length; i++) {
-    const prev = holds[i - 1];
-    const cur = holds[i];
-    if (cur[0] - prev[1] >= 2 * FADE_EDGE) continue;
-    const mid = (prev[1] + cur[0]) / 2;
-    prev[1] = Math.max(keep[i - 1][1], mid - FADE_EDGE);
-    cur[0] = Math.min(keep[i][0], mid + FADE_EDGE);
-  }
-
-  return holds.map(([h0, h1], i) => {
-    // Ramps take at most half the gap to the neighbouring hold, so the two
-    // meet at zero opacity instead of crossing over.
-    const before = i > 0 ? (h0 - holds[i - 1][1]) / 2 : Infinity;
-    const after =
-      i < holds.length - 1 ? (holds[i + 1][0] - h1) / 2 : Infinity;
-    return {
-      in0: h0 - Math.max(0, Math.min(FADE_EDGE, before)),
-      in1: h0,
-      out0: h1,
-      out1: h1 + Math.max(0, Math.min(FADE_EDGE, after)),
-    };
+  return entries.map((e) => {
+    const [v0, v1] = e.visible ?? [e.at - HOLD_HALF, e.at + HOLD_HALF];
+    return { in0: v0 - FADE_EDGE, in1: v0, out0: v1, out1: v1 + FADE_EDGE };
   });
 }
 
-/** Trapezoid: 0 outside the span, 1 across its opaque middle, smoothstepped
- *  over each ramp — the caption sticks in place instead of flashing past. */
+/** 0 outside the span, 1 across it, smoothstepped over the two short edge
+ *  ramps. */
 function opacityAt(progress: number, span: Span): number {
   if (progress <= span.in0 || progress >= span.out1) return 0;
   if (progress >= span.in1 && progress <= span.out0) return 1;
@@ -132,34 +113,61 @@ function WallTextItem({
   entry,
   span,
   progressRef,
+  targetProgressRef,
   isMobile = false,
 }: {
   entry: WallTextEntry;
   span: Span;
   progressRef: MutableRefObject<number>;
+  targetProgressRef: MutableRefObject<number>;
   isMobile?: boolean;
 }) {
   const ref = useRef<ComponentRef<typeof Text>>(null);
   // Lettering painted on a real surface rather than a caption floating in
   // front of the room: depth-tested, and never resized to fit the frame.
   const isDecal = !!entry.decal;
+  const text = entry.text;
   // A caption with an explicit `rotation` is a sticker: it holds that fixed
   // angle flat against its wall and never swims as the camera passes. One
-  // without a `rotation` falls back to facing the viewer head-on — used for
-  // the opening title, which should read instantly however you enter.
-  const fixedQuat = useRef<THREE.Quaternion | null>(
-    entry.rotation
-      ? new THREE.Quaternion().setFromEuler(
-          new THREE.Euler(...entry.rotation, "XYZ")
-        )
-      : null
+  // without a `rotation` falls back to facing the viewer head-on. Derived
+  // from the entry, not captured once at mount: a ref initialised on first
+  // render kept a stale value when the entry's rotation was edited under a
+  // running dev session, leaving that caption billboarding (swinging to face
+  // the camera) until a hard reload — which reads as the text "moving".
+  const [rx, ry, rz] = entry.rotation ?? [0, 0, 0];
+  const hasRotation = !!entry.rotation;
+  const fixedQuat = useMemo(
+    () =>
+      hasRotation
+        ? new THREE.Quaternion().setFromEuler(new THREE.Euler(rx, ry, rz, "XYZ"))
+        : null,
+    [hasRotation, rx, ry, rz]
   );
+
 
   useFrame(({ camera }) => {
     const node = ref.current;
     if (!node) return;
 
-    const vis = opacityAt(progressRef.current, span);
+    // A resting-view caption (`vanishBy`) is only ever shown with the camera
+    // at rest. It goes on the scroll *target*, which jumps on the first wheel
+    // notch while the camera is still easing out of rest — so it has gone
+    // before the room visibly moves — and it comes back only once BOTH the
+    // target and the eased camera are back at the start, so it never rides
+    // the last of the ease-in either. Everything else fades on the eased
+    // progress, in step with what is on screen.
+    let vis: number;
+    if (entry.vanishBy) {
+      const p = Math.max(targetProgressRef.current, progressRef.current);
+      // Hold through the first 60% of the way to `vanishBy`, then fade over
+      // the last 40% — a deliberate exit rather than dimming from the first
+      // notch.
+      const hold = entry.vanishBy * 0.6;
+      const t = Math.min(1, Math.max(0, (p - hold) / (entry.vanishBy - hold)));
+      vis = 1 - t * t * (3 - 2 * t);
+    } else {
+      vis = opacityAt(progressRef.current, span);
+    }
     node.fillOpacity = vis;
     node.outlineOpacity = vis;
     node.strokeOpacity = vis;
@@ -190,7 +198,7 @@ function WallTextItem({
       }
     }
 
-    if (fixedQuat.current) node.quaternion.copy(fixedQuat.current);
+    if (fixedQuat) node.quaternion.copy(fixedQuat);
     else node.quaternion.copy(camera.quaternion);
 
     const distance = node.position.distanceTo(camera.position);
@@ -198,8 +206,14 @@ function WallTextItem({
       MAX_FONT_SIZE,
       Math.max(MIN_FONT_SIZE, distance * SIZE_PER_DISTANCE)
     );
-    // A phone override stands on its own: it is a size chosen against a real
-    // surface, so nothing else may scale it.
+    // A caption is "pinned" once it names a size of its own: that size is in
+    // world units, so it scales with the wall behind it exactly like lettering
+    // that is really painted there. A phone override stands on its own — it is
+    // a size chosen against a real surface, so nothing else may scale it.
+    const pinnedSize =
+      isDecal ||
+      (isMobile && entry.fontSizeMobile !== undefined) ||
+      entry.fontSize !== undefined;
     let fontSize =
       isMobile && entry.fontSizeMobile !== undefined
         ? entry.fontSizeMobile
@@ -215,10 +229,14 @@ function WallTextItem({
     const ems =
       laidOut && node.fontSize > 0 ? (laidOut[2] - laidOut[0]) / node.fontSize : 0;
 
-    // Trim to fit the frame — but not for a decal, which was sized against the
-    // panel it is painted on: shrinking it as the camera closes in would be
-    // exactly the sliding-around that flag exists to stop.
-    if (ems > 0 && !isDecal && "isPerspectiveCamera" in camera) {
+    // Trim to fit the frame — but only for a caption still being auto-sized.
+    // This guard is proportional to camera distance, which is the point: it
+    // holds a caption's *on-screen* size steady as you approach. That is the
+    // opposite of what lettering on a wall does, so any caption that carries a
+    // size of its own — a decal, or one with an explicit `fontSize` — must skip
+    // it, or the size would be quietly re-derived every frame and the words
+    // would swim and breathe over a wall that is itself growing.
+    if (ems > 0 && !pinnedSize && "isPerspectiveCamera" in camera) {
       const cam = camera as THREE.PerspectiveCamera;
       const halfFov = THREE.MathUtils.degToRad(cam.fov) / 2;
       const frame = 2 * distance * Math.tan(halfFov) * cam.aspect;
@@ -228,15 +246,20 @@ function WallTextItem({
     // Fit the surface. `fitWidth` is a hard ceiling in world units — the width
     // of the panel the lettering has to stay inside — so the real glyph
     // metrics, not an estimate of them, decide the size. Camera-independent,
-    // so it never animates.
-    if (ems > 0 && entry.fitWidth) {
-      fontSize = Math.min(fontSize, entry.fitWidth / ems);
+    // so it never animates. On a phone it doubles as the guarantee that a
+    // pinned caption clears the narrow frame, since the frame-fill trim that
+    // would otherwise catch it is off: `fitWidthMobile` is set to 82% of the
+    // frame at the caption's closest approach along the rail.
+    const fitWidth =
+      (isMobile ? entry.fitWidthMobile : undefined) ?? entry.fitWidth;
+    if (ems > 0 && fitWidth) {
+      fontSize = Math.min(fontSize, fitWidth / ems);
     }
     node.fontSize = fontSize;
 
     // Text with its own hard line breaks is laid out as written — no auto-wrap
     // on top, so "SS Holdings\nBuilders in Visakhapatnam" stays two lines.
-    node.maxWidth = entry.text.includes("\n")
+    node.maxWidth = text.includes("\n")
       ? Infinity
       : node.fontSize * (isMobile ? MAX_WIDTH_EMS_MOBILE : MAX_WIDTH_EMS);
   });
@@ -270,7 +293,7 @@ function WallTextItem({
       material-transparent
       material-toneMapped={false}
     >
-      {entry.text}
+      {text}
     </Text>
   );
 }
@@ -283,7 +306,12 @@ function WallTextItem({
  * through mid-sentence — legibility wins over strict physical occlusion.
  * Each fades in/out around its own rail progress.
  */
-export function WallText3D({ floor, progressRef, isMobile }: WallText3DProps) {
+export function WallText3D({
+  floor,
+  progressRef,
+  targetProgressRef,
+  isMobile,
+}: WallText3DProps) {
   if (!floor.wallTexts3D?.length) return null;
   const entries = floor.wallTexts3D;
   const resolved = spans(entries);
@@ -295,6 +323,7 @@ export function WallText3D({ floor, progressRef, isMobile }: WallText3DProps) {
           entry={entry}
           span={resolved[i]}
           progressRef={progressRef}
+          targetProgressRef={targetProgressRef ?? progressRef}
           isMobile={isMobile}
         />
       ))}

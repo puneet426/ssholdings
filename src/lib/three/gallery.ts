@@ -56,16 +56,27 @@ export interface Hotspot {
 
 export interface WallText3D {
   id: string;
-  /** Rail progress (0–1) this line is centered on — fades in/out around it. */
+  /** Rail progress (0–1) where this wall reads squarest — where it was placed
+   *  from, and the centre of the fallback window when `visible` is unset. */
   at: number;
   /**
-   * Explicit `[from, to]` rail range to hold at full opacity, for a wall the
-   * camera only actually faces over a stretch that isn't centred on `at`.
-   * Without it the hold is a symmetric window around `at`, which on a corner
-   * can ramp the caption out again while the wall is still square in frame.
-   * Ramps still shrink so two captions are never on screen together.
+   * `[from, to]` rail range over which the wall this sticker sits on is in
+   * view: at least partly inside the frame, facing the camera, and not wholly
+   * behind other geometry. The caption is fully opaque across it and absent
+   * outside it, with only a couple of frames of ramp at each edge — it leaves
+   * because its wall does, never because a timer ran out. Ranges may overlap:
+   * two walls in view means two stickers in view. Measured offline against
+   * the baked rail and ff_pov's geometry, not eyeballed.
    */
-  hold?: [number, number];
+  visible?: [number, number];
+  /**
+   * Opening caption: shown from the start of the walk, held through the
+   * first 60% of the way to this progress, then faded out by it — keyed to
+   * the *scroll target* (ahead of the eased camera) on the way out, and to
+   * both target and camera on the way back in, so it returns only once the
+   * view has settled at the start. Overrides `visible`.
+   */
+  vanishBy?: number;
   /** World-space point on (or just off) the wall, in the floor's own scene units. */
   position: [number, number, number];
   /**
@@ -105,13 +116,22 @@ export interface WallText3D {
    */
   fitWidth?: number;
   /**
+   * Phone-only `fitWidth`. Sibling of `fontSizeMobile`, and the guarantee that
+   * a pinned caption clears a narrow portrait frame: a caption carrying its own
+   * `fontSize` skips the frame-fill trim (that trim scales with camera
+   * distance, which is what made the lettering drift over its wall), so this
+   * takes over the job — set it to 82% of the frame width at the caption's
+   * closest approach along the rail and it can never overrun the screen.
+   */
+  fitWidthMobile?: number;
+  /**
    * Paint this caption onto the surface behind it instead of over the whole
    * scene. A decal is depth-tested — a pillar, wall corner or shelf passing
    * between it and the camera hides it, the way lettering on a real panel
    * would be — and its size is never trimmed by the frame-fill guard, so it
    * stays welded to its surface as you walk past rather than sliding across
    * whatever geometry crosses in front. Only for a caption sitting flush on
-   * a surface that is genuinely in view across its whole hold; every other
+   * a surface that is genuinely in view across its whole `visible` range; every other
    * caption stays drawn-on-top, where legibility beats strict occlusion.
    */
   decal?: boolean;
@@ -251,8 +271,9 @@ export const FLOORS: GalleryFloor[] = [
     // walls instead, synced to the rail. `position` below is UNPLACED
     // (world origin) until run through DevPlacementHelper.
     hotspots: [],
-    // One caption per wall, each fading in only around its own `at` so two are
-    // never on screen together. Heights sit in a ~2.6–3.0 band: above the
+    // One sticker per wall, each on screen for exactly as long as its own wall
+    // is — see the note above ff-wall-2 for how every `visible` range was
+    // measured. Heights sit in a ~2.6–3.0 band: above the
     // kitchen island / sofas / pillars that would clip a lower line, but low
     // enough that the wider mobile FOV doesn't crop the top. ff-wall-1 has no
     // `rotation` (it faces the viewer — the opening title) and is pulled
@@ -261,38 +282,113 @@ export const FLOORS: GalleryFloor[] = [
     // share a spot, each centred on that moment's sightline (ff-wall-4 nudged
     // off the centre column). ff-wall-2/7/8/9 are the hand-placed originals.
     wallTexts3D: [
+      // The opening title. It reads against the black ceiling band, clear of
+      // the navbar: the navbar is a fixed 80px over a 100svh hero, so its
+      // share of the frame grows as the window gets shorter, and this height
+      // is set for a laptop-height window (~14px clear at 639px tall, more on
+      // anything taller) — a tenth-of-viewport lift cleared it on a 1080-tall
+      // screen and by nothing at all at 639.
+      //
+      // Unlike every other caption it is not on a wall — there is no wall in
+      // that part of the frame — and a sign floating in mid-air slides against
+      // its background by parallax as the camera walks sideways, which read as
+      // the title "moving". The background it is judged against is the
+      // kitchen's back wall — the shelving and slatted panels — whose face is
+      // at x -3.55 (raycast from the p=0 camera; the shelf units in front of
+      // it reach x -4.05/-4.25). So the anchor sits ON that wall plane, where
+      // the liked sight-line reaches it: the camera at (-17.48, 1.71) looking
+      // through (-8.00, 3.28) meets x -3.55 at y 4.02. Same ray, so it lands
+      // on the same pixels; size scaled by the distance ratio (14.12 / 9.61)
+      // so it is the same size on screen; and being on the wall's own plane
+      // it moves with the shelving one-to-one — no parallax left. y 4.02 is
+      // above the ceiling line (the ceiling's visible underside is y 3.63),
+      // which is the black band it reads against; it is drawn on top, not
+      // depth-tested, so the slab does not hide it. Fixed rotation (-1.57
+      // about Y faces it down -X, at the camera) and a world-unit size.
+      //
+      // The opening title. The client's two rules for it — "a sticker on the
+      // ceiling, front-facing, as if written there" and "must not move when
+      // we scroll" — contradict each other the moment the camera moves:
+      // anything painted in the room slides on screen as the camera walks,
+      // and right after the start the camera slides sideways past this wall,
+      // so a sticker here sweeps across the frame (built, seen, rejected), and
+      // a screen-fixed overlay has the room slide under it instead (built,
+      // seen, rejected). Both rules hold only if the text is never on screen
+      // while the camera is moving. So it is a real sticker — front-facing on
+      // the kitchen's back wall (face x -3.55, raycast), its top edge at the
+      // ceiling line (block 1.06m tall, y 3.08 → top 3.61 under the ceiling's
+      // visible underside at 3.63), centred on the slatted panel, drawn on
+      // top so the shelf units in front cannot slice it — and `vanishBy`
+      // 0.01 takes it away on the first scroll notch, keyed to the scroll
+      // input rather than the eased camera, so it is gone before the room has
+      // visibly moved. Scroll back to the top and it is there again. Phone
+      // 0.35 is edge-limited to 96% of the portrait frame (fitWidthMobile).
+      //
+      // Then, at the client's request, written on the CEILING band and
+      // vanishing by 0.05: the anchor stays on the back wall's plane
+      // (x -3.55, so it rides with the shelving, not the lamps) but up where
+      // the opening sight-line reaches that plane above the ceiling line —
+      // y 4.02, the block spanning 3.49–4.55 against the ceiling's visible
+      // underside at 3.63 — so it reads as lettering in the black band, top
+      // edge ~15px under the navbar on a laptop-height window. Drawn on top,
+      // so the ceiling slab does not hide it. It holds through the first
+      // 0.03 of scroll and fades out over 0.03–0.05 (see WallText3D), riding
+      // with the room for that short stretch, which the client accepted in
+      // exchange for a longer look at it. Phone anchor y 4.52 (same band,
+      // wider FOV), block top 0.68 NDC against the 0.81 navbar edge.
       {
         id: "ff-wall-1",
         at: 0.00,
-        position: [-8.00, 3.00, -5.90],
-        positionMobile: [-8.00, 3.60, -5.90],
+        vanishBy: 0.05,
+        position: [-3.55, 4.02, -5.90],
+        positionMobile: [-3.55, 4.52, -5.90],
+        rotation: [0.00, -1.57, 0.00],
+        fontSize: 0.44,
+        fontSizeMobile: 0.35,
+        fitWidth: 5.29,
+        fitWidthMobile: 4.20,
         bold: true,
         text: "SS Holdings\nBuilders in Visakhapatnam",
       },
-      // Corner captions: the camera swings from facing +X to facing -Z
-      // between 0.12 and 0.34, so an `at`-centred window ramped these out
-      // while their wall was still square in frame. Sampled on-screen
-      // stretches for these two anchors (desktop 16:9 / phone portrait):
-      // wall-2 0.12–0.34 / 0.17–0.26, wall-3 0.19–0.34 / 0.26–0.30 — the
-      // holds below hand over at 0.25 so each stays planted for the whole
-      // time its own wall is actually facing you, and wall-2 picks up at
-      // exactly the point the opening title reaches zero (0.089).
+      // Every `visible` range below is the stretch of the rail over which that
+      // sticker's wall is physically in view, swept at 0.002 steps against the
+      // baked camera path and ff_pov's geometry: any part of the laid-out block
+      // inside the desktop 16:9 frame, the surface facing the camera, and its
+      // centre plus four corners not all behind front-facing geometry (the
+      // shell's materials are all single-sided — you look into a room through
+      // its near wall — so the raycast culls back faces). Only the pass in
+      // which the sticker is meant to be read is kept: wall-7 and wall-9 are
+      // also glimpsed down the corridor from the pool room at ~15m, where the
+      // lettering is a few pixels tall and would only register as a flicker.
+      // Ranges overlap wherever two walls share the frame (1/2, 2/3, 3/4,
+      // 4/5, 5/6, 6/7/8, 8/9) — that is the point, not a defect: a sticker
+      // stays as long as its wall does, and leaves with it.
+      //
       // wall-2 is centred across its wall face — that panel is the
       // rectangle x -13.43, z -0.83–5.58, so mid-wall is z 2.38 — and
       // lifted to y 2.55 to clear the floor lamp's head (tops at 2.14).
-      { id: "ff-wall-2", at: 0.1775, hold: [0.12, 0.235], position: [-13.51, 2.55, 2.38], rotation: [0.00, -1.57, 0.00], bold: true, fontScale: 1.1, text: "Designed and built as\nper Vastu Principles" },
+      // In view 0.058–0.276: it is the corner the camera swings around, so it
+      // rakes steadily and is nearly edge-on (89°) by the time it leaves the
+      // frame — exactly what a sticker on that corner does. Pinned like wall-1: it
+      // already had a fixed rotation, but it was auto-sized, so the lettering
+      // held its on-screen size while the wall grew past it. The size is now
+      // world-units-fixed, then raised 20% (0.28 → 0.34, phone 0.22 → 0.26).
+      // Phone: the camera passes within 6.32m of this wall at 0.104, where a
+      // portrait frame is only 1.96m across, so the 2.8m-wide block is clipped
+      // at the screen edges for a moment there — which is exactly what a
+      // sticker does as you pass close to it, and the price of it being
+      // readable rather than tiny for the rest of its pass.
+      { id: "ff-wall-2", at: 0.1775, visible: [0.058, 0.276], position: [-13.51, 2.55, 2.38], rotation: [0.00, -1.57, 0.00], bold: true, fontSize: 0.34, fontSizeMobile: 0.26, fitWidth: 3.55, fitWidthMobile: 2.80, text: "Designed and built as\nper Vastu Principles" },
       // wall-3 sits on the leaning marble panel in the niche past the
       // credenza: that panel is 1.20 wide x 1.47 tall, centred at
       // (-10.44, 1.94, 0.86) and tilted back ~10deg, so the caption takes
-      // its centre (nudged 0.06 off the face) and its tilt. The anchor is
-      // in frame 0.18-0.38 desktop / 0.18-0.33 phone, so the hold runs to
-      // 0.315 rather than stopping at 0.305. It is the one caption on a
-      // fixed `fontSize` rather than the distance-derived one: broken over
-      // two lines, 0.23 puts the longer line at ~1.05 inside the 1.20 frame,
-      // and a decal painted on a frame should not resize as you approach.
-      // Phones take 0.25 instead (~1.14 of the 1.20) so the plaque is not
-      // too quiet to read on a small screen while still fitting the frame.
-      { id: "ff-wall-3", at: 0.2925, hold: [0.27, 0.315], position: [-10.44, 1.95, 0.92], rotation: [-0.17, 0.00, 0.00], fontSize: 0.23, fontSizeMobile: 0.25, decal: true, text: "Address\nof Quality" },
+      // its centre (nudged 0.06 off the face) and its tilt. In view
+      // 0.222–0.408; the pillar crosses in front of it around 0.32, and as a
+      // decal it is hidden per pixel while that happens rather than switched
+      // off. Broken over two lines, 0.23 puts the longer line at ~1.05 inside
+      // the 1.20 frame. Phones take 0.25 instead (~1.14 of the 1.20) so the
+      // plaque is not too quiet to read on a small screen while still fitting.
+      { id: "ff-wall-3", at: 0.2925, visible: [0.222, 0.408], position: [-10.44, 1.95, 0.92], rotation: [-0.17, 0.00, 0.00], fontSize: 0.23, fontSizeMobile: 0.25, decal: true, text: "Address\nof Quality" },
       // wall-4 is lettering on the chimney breast above the fireplace — the
       // panel the client marked up in public/demo/fourthtext.png. That face is
       // the rectangle x -9.40..-5.10 at z 1.86 (its neighbours on both sides
@@ -301,28 +397,32 @@ export const FLOORS: GalleryFloor[] = [
       // y 4.03. So the caption centres on the panel (x -7.25) in the band over
       // the niche, 0.06 off the face. `fitWidth` 3.70 keeps the longer line
       // inside the 4.30 panel whatever the glyph metrics work out to, and the
-      // hard line break splits it the way the markup does. Framing along the
-      // rail: the panel is unoccluded 0.32-0.39 and sits square in frame
-      // 0.33-0.37 (the marked-up screenshot is ~0.36), which is the hold —
-      // past it the camera walks on and the pillar and the plant cross in
-      // front, which a decal now handles by simply being hidden.
-      { id: "ff-wall-4", at: 0.3535, hold: [0.335, 0.372], position: [-7.25, 2.90, 1.92], rotation: [0.00, 0.00, 0.00], fontSize: 0.36, fitWidth: 3.70, decal: true, text: "35+ Projects Delivered\non time Every Time" },
+      // hard line break splits it the way the markup does. In view
+      // 0.174–0.454 — first from across the room at 61°, square by 0.35 — and
+      // the pillar and the plant cross in front of it repeatedly along the
+      // way; as a decal it is hidden wherever they are, per pixel, and never
+      // switched off for them.
+      { id: "ff-wall-4", at: 0.3535, visible: [0.174, 0.454], position: [-7.25, 2.90, 1.92], rotation: [0.00, 0.00, 0.00], fontSize: 0.36, fitWidth: 3.70, decal: true, text: "35+ Projects Delivered\non time Every Time" },
       // wall-5 is lettering on the dark stone slab behind the pool table
       // (public/demo/fifthtext.png). That slab leans back ~2.3deg against the
       // wall: its face runs x 5.26..8.28, top edge y 3.38, and the pale marble
       // block in front of it cuts it off at y 1.88 — so the clear band is
       // 3.02 x 1.50, centred at (6.77, 2.63) with the face at z 0.38 there.
-      // Three lines, as marked up. The camera tracks straight past this wall,
-      // so the slab is never occluded; the hold is simply where it reads
-      // squarest (obliquity 6-12deg, centred at 0.523).
-      { id: "ff-wall-5", at: 0.523, hold: [0.50, 0.55], position: [6.77, 2.63, 0.44], rotation: [-0.05, 0.00, 0.00], fontSize: 0.27, fitWidth: 2.60, decal: true, text: "25 years of Building\nQuality Homes with\nTrust" },
+      // Three lines, as marked up. This is the long one: the camera tracks
+      // straight past this wall and then turns towards it, so the slab is
+      // never occluded and stays within 6° of the sightline all the way to
+      // 0.65 — in view 0.412–0.770, over a third of the rail, leaving the
+      // frame edge-on at the end.
+      { id: "ff-wall-5", at: 0.523, visible: [0.412, 0.770], position: [6.77, 2.63, 0.44], rotation: [-0.05, 0.00, 0.00], fontSize: 0.27, fitWidth: 2.60, decal: true, text: "25 years of Building\nQuality Homes with\nTrust" },
       // wall-6 moves onto the framed artwork over the bed
       // (public/demo/sixthtext.png) — it used to sit on the pool-room wall,
       // one caption after wall-5 and on the same surface, which is what the
       // client wanted cleared. The canvas inside its frame is z -2.25..-3.28,
       // y 1.45..3.02 on the panel face at x 9.23, so the lettering centres in
-      // it at 0.05 off the face. Squarest at 0.812 (3deg), never occluded.
-      { id: "ff-wall-6", at: 0.812, hold: [0.795, 0.83], position: [9.28, 2.24, -2.77], rotation: [0.00, 1.57, 0.00], fontSize: 0.26, fitWidth: 0.90, decal: true, text: "Building\nLuxury\nHomes" },
+      // it at 0.05 off the face. Squarest at 0.812 (3deg), never occluded;
+      // in view 0.714–0.870, from the moment the camera rounds the corner
+      // towards the bed until the frame edge takes it.
+      { id: "ff-wall-6", at: 0.812, visible: [0.714, 0.870], position: [9.28, 2.24, -2.77], rotation: [0.00, 1.57, 0.00], fontSize: 0.26, fitWidth: 0.90, decal: true, text: "Building\nLuxury\nHomes" },
       // wall-7 goes on the marble slab leaning in the dressing room
       // (public/demo/seventhtext.png): face z -7.47..-8.70, y 0.05..2.13,
       // leaning back 0.08 rad so its x runs 11.69 at the foot to 11.51 at the
@@ -330,16 +430,20 @@ export const FLOORS: GalleryFloor[] = [
       // basis for that normal — a +X wall with a lean cannot be written as
       // [tilt, 1.57, 0], because in XYZ order the yaw is applied after the
       // tilt and swallows it. Five short lines keep the type big enough to
-      // read on a 1.23m-wide slab. Squarest at 0.874.
-      { id: "ff-wall-7", at: 0.874, hold: [0.855, 0.885], position: [11.64, 1.25, -8.08], rotation: [-1.5708, 1.4910, 1.5708], fontSize: 0.21, fitWidth: 1.02, bold: true, decal: true, text: "Visit Our\nProjects\nand See\nthe Quality\nFirsthand" },
+      // read on a 1.23m-wide slab. Squarest at 0.874, in view 0.826–0.920,
+      // sharing the frame with wall-6 at the start and wall-8 at the end.
+      { id: "ff-wall-7", at: 0.874, visible: [0.826, 0.920], position: [11.64, 1.25, -8.08], rotation: [-1.5708, 1.4910, 1.5708], fontSize: 0.21, fitWidth: 1.02, bold: true, decal: true, text: "Visit Our\nProjects\nand See\nthe Quality\nFirsthand" },
       // wall-8 goes on the framed panel beside the bathroom basin
       // (public/demo/eighthtext.png). That panel is its own plane at x 10.00,
       // standing 0.08 proud of the wall behind it; canvas z -11.27..-12.57,
       // y 0.35..2.46. The block centres at y 1.70 rather than mid-canvas so it
       // clears the vanity, which crosses the panel's lower right below y 1.03.
-      // Dead square at 0.92.
-      { id: "ff-wall-8", at: 0.9235, hold: [0.905, 0.94], position: [10.05, 1.70, -11.92], rotation: [0.00, 1.57, 0.00], fontSize: 0.27, fitWidth: 1.10, decal: true, text: "Something\ntells us\nyou like\nour work" },
-      { id: "ff-wall-9", at: 1.00, position: [11.59, 2.50, -18.54], rotation: [0.00, 1.57, 0.00], text: "You’ve seen enough. Now come see us." },
+      // Dead square at 0.92; in view 0.862–0.974.
+      { id: "ff-wall-8", at: 0.9235, visible: [0.862, 0.974], position: [10.05, 1.70, -11.92], rotation: [0.00, 1.57, 0.00], fontSize: 0.27, fitWidth: 1.10, decal: true, text: "Something\ntells us\nyou like\nour work" },
+      // The closing line: in view over the last 0.056 of the rail, since it
+      // sits at the far end of the bathroom and the camera is still walking
+      // towards it, and up to the very end so it is there when you arrive.
+      { id: "ff-wall-9", at: 1.00, visible: [0.944, 1.000], position: [11.59, 2.50, -18.54], rotation: [0.00, 1.57, 0.00], text: "You’ve seen enough. Now come see us." },
     ],
   },
   {

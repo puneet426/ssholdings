@@ -96,6 +96,7 @@ export function RoomScene({
               <WallText3D
                 floor={floor}
                 progressRef={smoothProgressRef}
+                targetProgressRef={progressRef}
                 isMobile={isMobile}
               />
               <DevPlacementHelper progressRef={smoothProgressRef} />
