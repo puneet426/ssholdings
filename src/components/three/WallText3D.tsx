@@ -15,31 +15,85 @@ interface WallText3DProps {
   isMobile?: boolean;
 }
 
-// A line eases in as the rail nears its `at`, and out again past it. Capped
-// per-entry (see `fadeWindowFor`) so neighbors never both hold nonzero
-// opacity at once — two captions on screen together is the one thing this
+// A line eases in as the rail nears its `at`, and out again past it. Windows
+// are trimmed against their neighbours (see `spans`) so two captions never
+// both hold nonzero opacity — two on screen together is the one thing this
 // component exists to avoid.
 const FADE_WINDOW = 0.09;
 
 // Sticker, not strobe: hold the caption at full opacity through most of its
 // window and only ramp over the outer edge, so it stays planted on the wall
-// while you scroll past rather than pulsing in and out. Fraction of the
-// half-window spent fully opaque before the ramp begins.
+// while you scroll past rather than pulsing in and out.
 const HOLD_FRACTION = 0.65;
+// The default window split into its two parts: the opaque middle and the ramp
+// on either side of it.
+const HOLD_HALF = FADE_WINDOW * HOLD_FRACTION;
+const FADE_EDGE = FADE_WINDOW * (1 - HOLD_FRACTION);
 
-/** Half-window for `entry`, shrunk so it never reaches past the midpoint to
- *  its nearest neighbor on either side — keeps consecutive captions from
- *  ever being visible at the same time regardless of how closely spaced
- *  their `at` values are. */
-function fadeWindowFor(entries: WallTextEntry[], index: number): number {
-  let half = FADE_WINDOW;
-  if (index > 0) {
-    half = Math.min(half, (entries[index].at - entries[index - 1].at) / 2);
+/** Resolved rail range for one caption: transparent before `in0`, ramping to
+ *  opaque at `in1`, planted until `out0`, back to transparent at `out1`. */
+interface Span {
+  in0: number;
+  in1: number;
+  out0: number;
+  out1: number;
+}
+
+/**
+ * Turn the entries' `at` / `hold` into non-overlapping spans.
+ *
+ * A caption's opaque stretch is its `hold` when it declares one — the wall it
+ * is stuck to is only square in frame over that part of the walk — otherwise
+ * a symmetric window around `at`. Where two of those stretches crowd each
+ * other the pair is split at the midpoint with a ramp's worth of clearance on
+ * each side, so one caption has always finished fading out before the next
+ * starts fading in. A declared `hold` is never trimmed — space is taken from
+ * the default windows around it.
+ */
+function spans(entries: WallTextEntry[]): Span[] {
+  const holds: [number, number][] = entries.map((e) =>
+    e.hold ? [e.hold[0], e.hold[1]] : [e.at - HOLD_HALF, e.at + HOLD_HALF]
+  );
+  // How far trimming may go: a declared `hold` is kept whole, while a default
+  // window may collapse all the way to its `at`.
+  const keep: [number, number][] = entries.map((e) =>
+    e.hold ? [e.hold[0], e.hold[1]] : [e.at, e.at]
+  );
+
+  for (let i = 1; i < holds.length; i++) {
+    const prev = holds[i - 1];
+    const cur = holds[i];
+    if (cur[0] - prev[1] >= 2 * FADE_EDGE) continue;
+    const mid = (prev[1] + cur[0]) / 2;
+    prev[1] = Math.max(keep[i - 1][1], mid - FADE_EDGE);
+    cur[0] = Math.min(keep[i][0], mid + FADE_EDGE);
   }
-  if (index < entries.length - 1) {
-    half = Math.min(half, (entries[index + 1].at - entries[index].at) / 2);
-  }
-  return half;
+
+  return holds.map(([h0, h1], i) => {
+    // Ramps take at most half the gap to the neighbouring hold, so the two
+    // meet at zero opacity instead of crossing over.
+    const before = i > 0 ? (h0 - holds[i - 1][1]) / 2 : Infinity;
+    const after =
+      i < holds.length - 1 ? (holds[i + 1][0] - h1) / 2 : Infinity;
+    return {
+      in0: h0 - Math.max(0, Math.min(FADE_EDGE, before)),
+      in1: h0,
+      out0: h1,
+      out1: h1 + Math.max(0, Math.min(FADE_EDGE, after)),
+    };
+  });
+}
+
+/** Trapezoid: 0 outside the span, 1 across its opaque middle, smoothstepped
+ *  over each ramp — the caption sticks in place instead of flashing past. */
+function opacityAt(progress: number, span: Span): number {
+  if (progress <= span.in0 || progress >= span.out1) return 0;
+  if (progress >= span.in1 && progress <= span.out0) return 1;
+  const t =
+    progress < span.in1
+      ? (progress - span.in0) / (span.in1 - span.in0)
+      : (span.out1 - progress) / (span.out1 - span.out0);
+  return t * t * (3 - 2 * t);
 }
 
 // How big the text reads on screen, independent of how near/far its anchor
@@ -59,19 +113,36 @@ const MAX_WIDTH_EMS_MOBILE = 7.5;
 // Phones also trim the font a touch so a wrapped 2–3 line caption still fits
 // between floor and ceiling.
 const MOBILE_FONT_SCALE = 0.9;
+// Last-resort width guard: however the size works out, the laid-out block is
+// scaled down until it spans at most this much of the frame at its distance.
+// It is what keeps a caption written with its own line breaks — which opts
+// out of auto-wrapping — from running off the sides of a phone.
+const MAX_FRAME_FILL = 0.82;
+
+/** The depth-state fields this component writes on troika's render materials. */
+type WallTextMaterial = THREE.Material & {
+  depthTest: boolean;
+  depthWrite: boolean;
+  polygonOffset: boolean;
+  polygonOffsetFactor: number;
+  polygonOffsetUnits: number;
+};
 
 function WallTextItem({
   entry,
-  fadeWindow,
+  span,
   progressRef,
   isMobile = false,
 }: {
   entry: WallTextEntry;
-  fadeWindow: number;
+  span: Span;
   progressRef: MutableRefObject<number>;
   isMobile?: boolean;
 }) {
   const ref = useRef<ComponentRef<typeof Text>>(null);
+  // Lettering painted on a real surface rather than a caption floating in
+  // front of the room: depth-tested, and never resized to fit the frame.
+  const isDecal = !!entry.decal;
   // A caption with an explicit `rotation` is a sticker: it holds that fixed
   // angle flat against its wall and never swims as the camera passes. One
   // without a `rotation` falls back to facing the viewer head-on — used for
@@ -88,44 +159,81 @@ function WallTextItem({
     const node = ref.current;
     if (!node) return;
 
-    // Trapezoid: 1 through the inner HOLD_FRACTION of the window, then a
-    // smoothstepped ramp to 0 at the edge — the caption sticks in place
-    // instead of flashing past.
-    const d = Math.abs(progressRef.current - entry.at) / fadeWindow;
-    let vis: number;
-    if (d >= 1) vis = 0;
-    else if (d <= HOLD_FRACTION) vis = 1;
-    else {
-      const t = 1 - (d - HOLD_FRACTION) / (1 - HOLD_FRACTION);
-      vis = t * t * (3 - 2 * t);
-    }
+    const vis = opacityAt(progressRef.current, span);
     node.fillOpacity = vis;
     node.outlineOpacity = vis;
     node.strokeOpacity = vis;
     node.visible = vis > 0.01;
 
-    // Force "always on top" on troika's real render materials. Once an
+    // Depth behaviour, written onto troika's real render materials. Once an
     // outline is set, `node.material` is a [outline, fill] array, so the
     // declarative `material-depthTest` prop lands on the array and is
-    // ignored — the caption would then be occluded by any wall, pillar or
-    // shelf between it and the camera. Set it on each material here instead.
-    const mtl = node.material as
-      | (THREE.Material & { depthTest: boolean; depthWrite: boolean })
-      | (THREE.Material & { depthTest: boolean; depthWrite: boolean })[];
+    // ignored — it has to be set per material here.
+    //
+    // A plain caption draws always on top: legibility beats occlusion, so no
+    // wall corner or shelf between it and the camera can slice through
+    // mid-sentence. A `decal` is the opposite — it is lettering ON its panel,
+    // so it keeps depth testing and anything nearer (the pillar the camera
+    // walks behind) hides it instead of having the words painted across it.
+    // Depth WRITING stays off either way: the text is transparent, and
+    // writing depth would punch its glyph boxes into whatever draws after.
+    // polygonOffset pulls a decal a hair towards the camera in depth so it
+    // cannot z-fight the surface it sits on.
+    const mtl = node.material as WallTextMaterial | WallTextMaterial[];
     for (const m of Array.isArray(mtl) ? mtl : [mtl]) {
-      if (m.depthTest) m.depthTest = false;
+      if (m.depthTest !== isDecal) m.depthTest = isDecal;
       if (m.depthWrite) m.depthWrite = false;
+      if (isDecal && !m.polygonOffset) {
+        m.polygonOffset = true;
+        m.polygonOffsetFactor = -1;
+        m.polygonOffsetUnits = -1;
+      }
     }
 
     if (fixedQuat.current) node.quaternion.copy(fixedQuat.current);
     else node.quaternion.copy(camera.quaternion);
 
     const distance = node.position.distanceTo(camera.position);
-    const size = Math.min(
+    const auto = Math.min(
       MAX_FONT_SIZE,
       Math.max(MIN_FONT_SIZE, distance * SIZE_PER_DISTANCE)
     );
-    node.fontSize = (entry.fontSize ?? size) * (isMobile ? MOBILE_FONT_SCALE : 1);
+    // A phone override stands on its own: it is a size chosen against a real
+    // surface, so nothing else may scale it.
+    let fontSize =
+      isMobile && entry.fontSizeMobile !== undefined
+        ? entry.fontSizeMobile
+        : (entry.fontSize ?? auto) *
+          (entry.fontScale ?? 1) *
+          (isMobile ? MOBILE_FONT_SCALE : 1);
+
+    // Both width caps below work off the block troika laid out last frame. Its
+    // width in ems holds steady as the size changes (the wrap width is itself
+    // in ems), so dividing a target width by it settles in a frame instead of
+    // oscillating.
+    const laidOut = node.textRenderInfo?.blockBounds;
+    const ems =
+      laidOut && node.fontSize > 0 ? (laidOut[2] - laidOut[0]) / node.fontSize : 0;
+
+    // Trim to fit the frame — but not for a decal, which was sized against the
+    // panel it is painted on: shrinking it as the camera closes in would be
+    // exactly the sliding-around that flag exists to stop.
+    if (ems > 0 && !isDecal && "isPerspectiveCamera" in camera) {
+      const cam = camera as THREE.PerspectiveCamera;
+      const halfFov = THREE.MathUtils.degToRad(cam.fov) / 2;
+      const frame = 2 * distance * Math.tan(halfFov) * cam.aspect;
+      fontSize = Math.min(fontSize, (frame * MAX_FRAME_FILL) / ems);
+    }
+
+    // Fit the surface. `fitWidth` is a hard ceiling in world units — the width
+    // of the panel the lettering has to stay inside — so the real glyph
+    // metrics, not an estimate of them, decide the size. Camera-independent,
+    // so it never animates.
+    if (ems > 0 && entry.fitWidth) {
+      fontSize = Math.min(fontSize, entry.fitWidth / ems);
+    }
+    node.fontSize = fontSize;
+
     // Text with its own hard line breaks is laid out as written — no auto-wrap
     // on top, so "SS Holdings\nBuilders in Visakhapatnam" stays two lines.
     node.maxWidth = entry.text.includes("\n")
@@ -178,13 +286,14 @@ function WallTextItem({
 export function WallText3D({ floor, progressRef, isMobile }: WallText3DProps) {
   if (!floor.wallTexts3D?.length) return null;
   const entries = floor.wallTexts3D;
+  const resolved = spans(entries);
   return (
     <>
       {entries.map((entry, i) => (
         <WallTextItem
           key={entry.id}
           entry={entry}
-          fadeWindow={fadeWindowFor(entries, i)}
+          span={resolved[i]}
           progressRef={progressRef}
           isMobile={isMobile}
         />

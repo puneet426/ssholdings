@@ -58,6 +58,14 @@ export interface WallText3D {
   id: string;
   /** Rail progress (0–1) this line is centered on — fades in/out around it. */
   at: number;
+  /**
+   * Explicit `[from, to]` rail range to hold at full opacity, for a wall the
+   * camera only actually faces over a stretch that isn't centred on `at`.
+   * Without it the hold is a symmetric window around `at`, which on a corner
+   * can ramp the caption out again while the wall is still square in frame.
+   * Ramps still shrink so two captions are never on screen together.
+   */
+  hold?: [number, number];
   /** World-space point on (or just off) the wall, in the floor's own scene units. */
   position: [number, number, number];
   /**
@@ -75,6 +83,38 @@ export interface WallText3D {
   rotation?: [number, number, number];
   /** World-unit character height — auto-sized by distance from camera if omitted. */
   fontSize?: number;
+  /**
+   * Multiplier on the auto-sized height, to push one caption bigger or
+   * smaller than the rest without giving up distance-based sizing.
+   */
+  fontScale?: number;
+  /**
+   * Phone-only character height, in world units. The final word when set —
+   * no auto-sizing, no `fontScale`, and none of the usual phone trim on top,
+   * so a caption sized to a fixed surface can be read on a small screen
+   * without being re-derived. Sibling of `positionMobile`.
+   */
+  fontSizeMobile?: number;
+  /**
+   * Hard ceiling on the laid-out block's width, in world units — the width of
+   * the panel the lettering must stay inside. Applied against troika's own
+   * measurement of the text, so the real glyph metrics decide the size rather
+   * than an estimate of them, and it is camera-independent, so it settles once
+   * and never animates. Pair it with `fontSize` on a decal: the `fontSize` is
+   * the size you want, `fitWidth` the size the surface allows.
+   */
+  fitWidth?: number;
+  /**
+   * Paint this caption onto the surface behind it instead of over the whole
+   * scene. A decal is depth-tested — a pillar, wall corner or shelf passing
+   * between it and the camera hides it, the way lettering on a real panel
+   * would be — and its size is never trimmed by the frame-fill guard, so it
+   * stays welded to its surface as you walk past rather than sliding across
+   * whatever geometry crosses in front. Only for a caption sitting flush on
+   * a surface that is genuinely in view across its whole hold; every other
+   * caption stays drawn-on-top, where legibility beats strict occlusion.
+   */
+  decal?: boolean;
   /** Faux-bold — thickens the strokes with a same-colour stroke pass. */
   bold?: boolean;
   text: string;
@@ -229,13 +269,76 @@ export const FLOORS: GalleryFloor[] = [
         bold: true,
         text: "SS Holdings\nBuilders in Visakhapatnam",
       },
-      { id: "ff-wall-2", at: 0.15, position: [-13.51, 2.60, 3.74], rotation: [0.00, -1.57, 0.00], text: "Designed and built as per Vastu Principles" },
-      { id: "ff-wall-3", at: 0.28, position: [-11.80, 2.90, 6.10], rotation: [0.00, 0.00, 0.00], text: "Address of Quality" },
-      { id: "ff-wall-4", at: 0.40, position: [-1.20, 3.00, 6.60], rotation: [0.00, 0.00, 0.00], text: "35+ Projects Delivered on time Every Time" },
-      { id: "ff-wall-5", at: 0.50, position: [4.00, 2.90, 4.60], rotation: [0.00, 0.00, 0.00], text: "25 years of Building Quality Homes with Trust" },
-      { id: "ff-wall-6", at: 0.61, position: [7.55, 3.00, 0.56], rotation: [0.00, 0.00, 0.00], text: "Building Luxury Homes" },
-      { id: "ff-wall-7", at: 0.73, position: [12.59, 2.81, 0.16], rotation: [0.00, 1.57, 0.00], text: "Visit Our Projects and See the Quality Firsthand" },
-      { id: "ff-wall-8", at: 0.84, position: [10.02, 0.84, -4.80], rotation: [0.00, 1.57, 0.00], text: "Something tells us you like our work" },
+      // Corner captions: the camera swings from facing +X to facing -Z
+      // between 0.12 and 0.34, so an `at`-centred window ramped these out
+      // while their wall was still square in frame. Sampled on-screen
+      // stretches for these two anchors (desktop 16:9 / phone portrait):
+      // wall-2 0.12–0.34 / 0.17–0.26, wall-3 0.19–0.34 / 0.26–0.30 — the
+      // holds below hand over at 0.25 so each stays planted for the whole
+      // time its own wall is actually facing you, and wall-2 picks up at
+      // exactly the point the opening title reaches zero (0.089).
+      // wall-2 is centred across its wall face — that panel is the
+      // rectangle x -13.43, z -0.83–5.58, so mid-wall is z 2.38 — and
+      // lifted to y 2.55 to clear the floor lamp's head (tops at 2.14).
+      { id: "ff-wall-2", at: 0.1775, hold: [0.12, 0.235], position: [-13.51, 2.55, 2.38], rotation: [0.00, -1.57, 0.00], bold: true, fontScale: 1.1, text: "Designed and built as\nper Vastu Principles" },
+      // wall-3 sits on the leaning marble panel in the niche past the
+      // credenza: that panel is 1.20 wide x 1.47 tall, centred at
+      // (-10.44, 1.94, 0.86) and tilted back ~10deg, so the caption takes
+      // its centre (nudged 0.06 off the face) and its tilt. The anchor is
+      // in frame 0.18-0.38 desktop / 0.18-0.33 phone, so the hold runs to
+      // 0.315 rather than stopping at 0.305. It is the one caption on a
+      // fixed `fontSize` rather than the distance-derived one: broken over
+      // two lines, 0.23 puts the longer line at ~1.05 inside the 1.20 frame,
+      // and a decal painted on a frame should not resize as you approach.
+      // Phones take 0.25 instead (~1.14 of the 1.20) so the plaque is not
+      // too quiet to read on a small screen while still fitting the frame.
+      { id: "ff-wall-3", at: 0.2925, hold: [0.27, 0.315], position: [-10.44, 1.95, 0.92], rotation: [-0.17, 0.00, 0.00], fontSize: 0.23, fontSizeMobile: 0.25, decal: true, text: "Address\nof Quality" },
+      // wall-4 is lettering on the chimney breast above the fireplace — the
+      // panel the client marked up in public/demo/fourthtext.png. That face is
+      // the rectangle x -9.40..-5.10 at z 1.86 (its neighbours on both sides
+      // step back to z 0.72), with the log niche cut out of it between y 1.20
+      // and y 2.25 and clear wall above that up to the mezzanine glass at
+      // y 4.03. So the caption centres on the panel (x -7.25) in the band over
+      // the niche, 0.06 off the face. `fitWidth` 3.70 keeps the longer line
+      // inside the 4.30 panel whatever the glyph metrics work out to, and the
+      // hard line break splits it the way the markup does. Framing along the
+      // rail: the panel is unoccluded 0.32-0.39 and sits square in frame
+      // 0.33-0.37 (the marked-up screenshot is ~0.36), which is the hold —
+      // past it the camera walks on and the pillar and the plant cross in
+      // front, which a decal now handles by simply being hidden.
+      { id: "ff-wall-4", at: 0.3535, hold: [0.335, 0.372], position: [-7.25, 2.90, 1.92], rotation: [0.00, 0.00, 0.00], fontSize: 0.36, fitWidth: 3.70, decal: true, text: "35+ Projects Delivered\non time Every Time" },
+      // wall-5 is lettering on the dark stone slab behind the pool table
+      // (public/demo/fifthtext.png). That slab leans back ~2.3deg against the
+      // wall: its face runs x 5.26..8.28, top edge y 3.38, and the pale marble
+      // block in front of it cuts it off at y 1.88 — so the clear band is
+      // 3.02 x 1.50, centred at (6.77, 2.63) with the face at z 0.38 there.
+      // Three lines, as marked up. The camera tracks straight past this wall,
+      // so the slab is never occluded; the hold is simply where it reads
+      // squarest (obliquity 6-12deg, centred at 0.523).
+      { id: "ff-wall-5", at: 0.523, hold: [0.50, 0.55], position: [6.77, 2.63, 0.44], rotation: [-0.05, 0.00, 0.00], fontSize: 0.27, fitWidth: 2.60, decal: true, text: "25 years of Building\nQuality Homes with\nTrust" },
+      // wall-6 moves onto the framed artwork over the bed
+      // (public/demo/sixthtext.png) — it used to sit on the pool-room wall,
+      // one caption after wall-5 and on the same surface, which is what the
+      // client wanted cleared. The canvas inside its frame is z -2.25..-3.28,
+      // y 1.45..3.02 on the panel face at x 9.23, so the lettering centres in
+      // it at 0.05 off the face. Squarest at 0.812 (3deg), never occluded.
+      { id: "ff-wall-6", at: 0.812, hold: [0.795, 0.83], position: [9.28, 2.24, -2.77], rotation: [0.00, 1.57, 0.00], fontSize: 0.26, fitWidth: 0.90, decal: true, text: "Building\nLuxury\nHomes" },
+      // wall-7 goes on the marble slab leaning in the dressing room
+      // (public/demo/seventhtext.png): face z -7.47..-8.70, y 0.05..2.13,
+      // leaning back 0.08 rad so its x runs 11.69 at the foot to 11.51 at the
+      // top (11.59 at the caption's own height). The rotation is the roll-free
+      // basis for that normal — a +X wall with a lean cannot be written as
+      // [tilt, 1.57, 0], because in XYZ order the yaw is applied after the
+      // tilt and swallows it. Five short lines keep the type big enough to
+      // read on a 1.23m-wide slab. Squarest at 0.874.
+      { id: "ff-wall-7", at: 0.874, hold: [0.855, 0.885], position: [11.64, 1.25, -8.08], rotation: [-1.5708, 1.4910, 1.5708], fontSize: 0.21, fitWidth: 1.02, bold: true, decal: true, text: "Visit Our\nProjects\nand See\nthe Quality\nFirsthand" },
+      // wall-8 goes on the framed panel beside the bathroom basin
+      // (public/demo/eighthtext.png). That panel is its own plane at x 10.00,
+      // standing 0.08 proud of the wall behind it; canvas z -11.27..-12.57,
+      // y 0.35..2.46. The block centres at y 1.70 rather than mid-canvas so it
+      // clears the vanity, which crosses the panel's lower right below y 1.03.
+      // Dead square at 0.92.
+      { id: "ff-wall-8", at: 0.9235, hold: [0.905, 0.94], position: [10.05, 1.70, -11.92], rotation: [0.00, 1.57, 0.00], fontSize: 0.27, fitWidth: 1.10, decal: true, text: "Something\ntells us\nyou like\nour work" },
       { id: "ff-wall-9", at: 1.00, position: [11.59, 2.50, -18.54], rotation: [0.00, 1.57, 0.00], text: "You’ve seen enough. Now come see us." },
     ],
   },

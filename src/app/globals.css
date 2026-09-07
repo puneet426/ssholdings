@@ -180,7 +180,6 @@ body > footer {
 #about            { --sec: color-mix(in oklab, var(--color-bg) 95%, var(--tint-warm)); }
 #why              { --sec: color-mix(in oklab, var(--color-bg) 95%, var(--tint-stone)); }
 #projects         { --sec: color-mix(in oklab, var(--color-bg) 93%, var(--tint-brass)); }
-#blog             { --sec: color-mix(in oklab, var(--color-bg) 97%, var(--tint-lift)); }
 #testimonials     { --sec: color-mix(in oklab, var(--color-bg) 93%, var(--tint-warm)); }
 #faq              { --sec: color-mix(in oklab, var(--color-bg) 96%, var(--tint-stone)); }
 #contact          { --sec: color-mix(in oklab, var(--color-bg) 94%, var(--tint-warm)); }
