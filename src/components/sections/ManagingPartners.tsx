@@ -76,7 +76,7 @@ export function ManagingPartners() {
           {partners.map((partner) => (
             <motion.div key={partner.name} variants={revealItemVariants}>
               <Portrait name={partner.name} image={partner.image} />
-              <h3 className="font-display mt-3 text-sm font-medium text-balance sm:text-base">
+              <h3 className="font-display mt-3 text-center text-sm font-semibold text-balance text-accent sm:text-base">
                 {partner.name}
               </h3>
             </motion.div>

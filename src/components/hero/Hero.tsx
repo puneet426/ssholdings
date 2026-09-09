@@ -22,25 +22,25 @@ const RoomCanvas = dynamic(
 );
 
 // Wheel delta (px) to travel the whole rail — a long, unhurried scroll.
-const WHEEL_DIVISOR = 7200;
+const WHEEL_DIVISOR = 9000;
 // Pixels of mouse drag to travel the whole rail.
-const DRAG_DIVISOR = 3400;
+const DRAG_DIVISOR = 4250;
 // Touch is lighter: a phone swipe covers more rail per pixel so it doesn't
 // take five drags to cross a floor, and — paired with the fling below — a
 // flick keeps gliding after the finger lifts instead of dead-stopping.
-const TOUCH_DRAG_DIVISOR = 1500;
+const TOUCH_DRAG_DIVISOR = 1875;
 // The First Floor scrubs ~12% slower than the other floors — its wall
 // captions each need an extra beat to land as the camera passes. Applied to
 // every scrub delta (wheel, drag, touch, fling) while "ff" is active.
 const FF_SCRUB_SCALE = 0.88;
 // Most the target may move in one event, so a hard fling can't tear the
 // eased camera off the front of the rail.
-const MAX_STEP = 0.03;
+const MAX_STEP = 0.024;
 // Touch fling: after a swipe ends, decay the last measured velocity each
 // frame until it's spent or the rail hits an end.
 const FLING_FRICTION = 0.92; // survives per ~16ms frame
-const MIN_FLING_VELOCITY = 3e-5; // progress units / ms — below this, stop
-const MAX_FLING_VELOCITY = 3e-3; // clamp a wild flick
+const MIN_FLING_VELOCITY = 2.4e-5; // progress units / ms — below this, stop
+const MAX_FLING_VELOCITY = 2.4e-3; // clamp a wild flick
 
 /**
  * The gallery hero. It drops straight into a floor's pinned first-person
