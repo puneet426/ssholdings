@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "Ongoing Projects",
   description:
     "Residential developments currently under construction by SS Holdings in Visakhapatnam.",
+  alternates: { canonical: "/projects/ongoing" },
 };
 
 export default function OngoingProjectsPage() {

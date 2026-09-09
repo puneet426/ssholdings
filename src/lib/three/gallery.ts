@@ -92,6 +92,22 @@ export interface WallText3D {
    * viewer head-on (used for the opening title).
    */
   rotation?: [number, number, number];
+  /**
+   * Carry this caption in the CAMERA'S OWN FRAME instead of leaving it at
+   * `position` in the room. `offset` is where it sat relative to the camera
+   * at the rail position it was placed from, re-applied every frame, so the
+   * caption renders at identical pixels no matter what the rig does — it
+   * cannot be swept across the screen as the camera walks, and the mouse
+   * look-around cannot swing it either. Only the opening title uses this:
+   * every other caption is lettering on a real surface and is meant to move
+   * with it. `position` stays as the note of where that anchor was.
+   */
+  screenLocked?: {
+    /** Camera-space [x, y, z]; z is negative (in front of the camera). */
+    offset: [number, number, number];
+    /** Phone-only override, for the floor's widened FOV. */
+    offsetMobile?: [number, number, number];
+  };
   /** World-unit character height — auto-sized by distance from camera if omitted. */
   fontSize?: number;
   /**
@@ -138,6 +154,15 @@ export interface WallText3D {
   /** Faux-bold — thickens the strokes with a same-colour stroke pass. */
   bold?: boolean;
   text: string;
+  /**
+   * Phone-only wording, for a line whose desktop break is wrong on a narrow
+   * frame. Usually the same words with different `
+`s: a line that reads
+   * across a wide screen has to be broken by hand on a phone, where the
+   * automatic wrap would put it where the words happen to fall rather than
+   * where the sentence does.
+   */
+  textMobile?: string;
 }
 
 export interface GalleryFloor {
@@ -324,25 +349,43 @@ export const FLOORS: GalleryFloor[] = [
       // visibly moved. Scroll back to the top and it is there again. Phone
       // 0.35 is edge-limited to 96% of the portrait frame (fitWidthMobile).
       //
-      // Then, at the client's request, written on the CEILING band and
-      // vanishing by 0.05: the anchor stays on the back wall's plane
-      // (x -3.55, so it rides with the shelving, not the lamps) but up where
-      // the opening sight-line reaches that plane above the ceiling line —
-      // y 4.02, the block spanning 3.49–4.55 against the ceiling's visible
-      // underside at 3.63 — so it reads as lettering in the black band, top
-      // edge ~15px under the navbar on a laptop-height window. Drawn on top,
-      // so the ceiling slab does not hide it. It holds through the first
-      // 0.03 of scroll and fades out over 0.03–0.05 (see WallText3D), riding
-      // with the room for that short stretch, which the client accepted in
-      // exchange for a longer look at it. Phone anchor y 4.52 (same band,
-      // wider FOV), block top 0.68 NDC against the 0.81 navbar edge.
+      // Then, at the client's request, written on the CEILING band: the anchor
+      // sat on the back wall's plane (x -3.55, so it rode with the shelving,
+      // not the lamps) but up where the opening sight-line reaches that plane
+      // above the ceiling line — y 4.02, the block spanning 3.49–4.55 against
+      // the ceiling's visible underside at 3.63 — so it read as lettering in
+      // the black band, top edge ~15px under the navbar on a laptop-height
+      // window. Phone anchor y 4.52 (same band, wider FOV), block top 0.68 NDC
+      // against the 0.81 navbar edge.
+      //
+      // NOW `screenLocked`, because an anchor in the room cannot hold still.
+      // Two separate things were moving it, and only one of them was scroll:
+      // the camera walks SIDEWAYS past this wall right after the start, which
+      // swept the title from centre-frame to 0.20 NDC left by rail 0.02 and
+      // 0.36 left by 0.05 — the whole way across a fifth of the screen while
+      // it was still fully opaque — and the mouse look-around (YAW_RANGE 0.05
+      // rad) swings it several dozen pixels with no scrolling at all, which is
+      // why every earlier fix, all of them aimed at scroll timing, left the
+      // title still visibly moving. Carried in the camera's frame it is
+      // pixel-identical every frame against both.
+      //
+      // The offsets are exactly where this anchor sat relative to the p=0
+      // camera — that camera is at (-17.484, 1.714, -5.904) looking down +X,
+      // dead level (YXZ euler 0, -90deg, 0), so the desktop anchor is 13.93
+      // ahead and 2.31 up, the phone one 2.81 up — which makes the title
+      // render at the same pixels, the same size, as the wall placement did
+      // at rest. It holds through the first 0.03 of scroll and dissolves in
+      // place over 0.03-0.05, rather than sweeping off the side first.
       {
         id: "ff-wall-1",
         at: 0.00,
-        vanishBy: 0.08,
+        vanishBy: 0.05,
         position: [-3.55, 4.02, -5.90],
         positionMobile: [-3.55, 4.52, -5.90],
-        rotation: [0.00, -1.57, 0.00],
+        screenLocked: {
+          offset: [0.00, 2.31, -13.93],
+          offsetMobile: [0.00, 2.81, -13.93],
+        },
         fontSize: 0.44,
         fontSizeMobile: 0.35,
         fitWidth: 5.29,
@@ -402,7 +445,7 @@ export const FLOORS: GalleryFloor[] = [
       // the pillar and the plant cross in front of it repeatedly along the
       // way; as a decal it is hidden wherever they are, per pixel, and never
       // switched off for them.
-      { id: "ff-wall-4", at: 0.3535, visible: [0.174, 0.454], position: [-7.25, 2.90, 1.92], rotation: [0.00, 0.00, 0.00], fontSize: 0.36, fitWidth: 3.70, decal: true, text: "35+ Projects\nDelivered on time Always" },
+      { id: "ff-wall-4", at: 0.3535, visible: [0.174, 0.454], position: [-7.25, 2.90, 1.92], rotation: [0.00, 0.00, 0.00], fontSize: 0.36, fitWidth: 3.70, decal: true, text: "35+ Projects\nDelivered on time, Always" },
       // wall-5 is lettering on the dark stone slab behind the pool table
       // (public/demo/fifthtext.png). That slab leans back ~2.3deg against the
       // wall: its face runs x 5.26..8.28, top edge y 3.38, and the pale marble
@@ -429,10 +472,15 @@ export const FLOORS: GalleryFloor[] = [
       // top (11.59 at the caption's own height). The rotation is the roll-free
       // basis for that normal — a +X wall with a lean cannot be written as
       // [tilt, 1.57, 0], because in XYZ order the yaw is applied after the
-      // tilt and swallows it. Five short lines keep the type big enough to
-      // read on a 1.23m-wide slab. Squarest at 0.874, in view 0.826–0.920,
+      // tilt and swallows it. Three lines as the client wants them read, one
+      // clause each; `fitWidth` 1.15 is what the 1.23m-wide slab allows, and
+      // it — not `fontSize` — is what sizes the type here, since the longest
+      // line ("Feel the Difference") is nearly twice the old ones. Off-white
+      // over the dark keyline like every other caption: black on the marble
+      // was tried and reads worse against the veining.
+      // Squarest at 0.874, in view 0.826–0.920,
       // sharing the frame with wall-6 at the start and wall-8 at the end.
-      { id: "ff-wall-7", at: 0.874, visible: [0.826, 0.920], position: [11.64, 1.25, -8.08], rotation: [-1.5708, 1.4910, 1.5708], fontSize: 0.21, fitWidth: 1.02, bold: true, decal: true, text: "Visit Our\nProjects\nand See\nthe Quality\nFeel the\ndifference" },
+      { id: "ff-wall-7", at: 0.874, visible: [0.826, 0.920], position: [11.64, 1.25, -8.08], rotation: [-1.5708, 1.4910, 1.5708], fontSize: 0.23, fitWidth: 1.15, bold: true, decal: true, text: "Visit Our Projects,\nSee the Quality,\nFeel the Difference" },
       // wall-8 goes on the framed panel beside the bathroom basin
       // (public/demo/eighthtext.png). That panel is its own plane at x 10.00,
       // standing 0.08 proud of the wall behind it; canvas z -11.27..-12.57,
@@ -440,10 +488,23 @@ export const FLOORS: GalleryFloor[] = [
       // clears the vanity, which crosses the panel's lower right below y 1.03.
       // Dead square at 0.92; in view 0.862–0.974.
       { id: "ff-wall-8", at: 0.9235, visible: [0.862, 0.974], position: [10.05, 1.70, -11.92], rotation: [0.00, 1.57, 0.00], fontSize: 0.27, fitWidth: 1.10, decal: true, text: "Something\ntells us\nyou like\nour work" },
-      // The closing line: in view over the last 0.056 of the rail, since it
-      // sits at the far end of the bathroom and the camera is still walking
-      // towards it, and up to the very end so it is there when you arrive.
-      { id: "ff-wall-9", at: 1.00, visible: [0.944, 1.000], position: [11.59, 2.50, -18.54], rotation: [0.00, 1.57, 0.00], text: "Visit Our Projects, It will be worth it" },
+      // The closing line, on the plain wall at the far end of the bathroom
+      // (ff_split-004_wall-001, face x 11.50, z -22.74..-17.02, y 0..3.00).
+      // Centred across that face at z -19.88, and held at y 2.50 rather than
+      // the wall's own mid-height: the two downlights wash the middle of the
+      // wall almost white, and the lettering only reads against the darker
+      // band above them. `fitWidth` keeps the line inside the face — at the
+      // far end of its window the auto size would run it 5.6m wide on a 5.7m
+      // wall. In view over the last 0.056 of the rail, since the camera is
+      // still walking towards this wall, and up to the very end so it is
+      // there when you arrive.
+      //
+      // The phone gets its own placement and its own break. Its frame is
+      // only ~2.3m wide on this wall against the desktop 8.8m, so a caption
+      // centred on the wall would sit off the right edge of the screen:
+      // `positionMobile` puts it on the camera's sightline instead
+      // (z -18.93, where it looks at rest), which is still on the same wall.
+      { id: "ff-wall-9", at: 1.00, visible: [0.944, 1.000], position: [11.59, 2.50, -19.88], rotation: [0.00, 1.57, 0.00], fitWidth: 4.80, positionMobile: [11.59, 2.50, -18.93], text: "Visit Our Projects, It will be worth it", textMobile: "Visit Our Projects,\nIt will be worth it" },
     ],
   },
   {

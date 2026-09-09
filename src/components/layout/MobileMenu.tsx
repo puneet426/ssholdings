@@ -10,6 +10,9 @@ interface MobileMenuProps {
   onClose: () => void;
 }
 
+// The panel is theme-fixed dark for the same reason the header is: it opens
+// under the header's white close button, so a daylight-cream ground would
+// swallow it. See Header.tsx.
 export function MobileMenu({ open, onClose }: MobileMenuProps) {
   const reducedMotion = useReducedMotion();
 
@@ -41,7 +44,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-40 touch-none overscroll-contain bg-bg md:hidden"
+          className="fixed inset-0 z-40 touch-none overscroll-contain bg-charcoal md:hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -62,7 +65,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
                   delay: reducedMotion ? 0 : 0.04 * i,
                   duration: reducedMotion ? 0.01 : 0.3,
                 }}
-                className="font-display text-4xl font-medium py-3 text-fg"
+                className="font-display text-4xl font-medium py-3 text-paper"
               >
                 {link.label}
               </motion.a>
@@ -75,9 +78,9 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
                 delay: reducedMotion ? 0 : 0.04 * navLinks.length,
                 duration: reducedMotion ? 0.01 : 0.3,
               }}
-              className="mt-8 flex items-center gap-3 border-t border-fg/10 pt-6 text-sm uppercase tracking-[0.25em] text-fg/60"
+              className="mt-8 flex items-center gap-3 border-t border-paper/10 pt-6 text-sm uppercase tracking-[0.25em] text-paper/60"
             >
-              <ThemeToggle className="flex h-9 w-9 items-center justify-center rounded-full border border-fg/15 text-fg transition-colors hover:bg-fg/10" />
+              <ThemeToggle className="flex h-9 w-9 items-center justify-center rounded-full border border-paper/15 text-paper transition-colors hover:bg-paper/10" />
               Theme
             </motion.div>
           </nav>

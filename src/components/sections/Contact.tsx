@@ -1,5 +1,5 @@
 import { Reveal } from "@/components/ui/Reveal";
-import { Mail, Phone } from "lucide-react";
+import { ArrowRight, Mail, Phone } from "lucide-react";
 import { siteConfig } from "@/lib/site-config";
 import { EnquiryForm } from "./EnquiryForm";
 
@@ -17,10 +17,22 @@ export function Contact() {
                 Contact Us
               </h2>
               <p className="mt-5 text-fg/65 leading-relaxed max-w-md">
-                Whether you&apos;re specifying materials for a single room or
-                an entire development, our team can help you find the right
-                surface for the space.
+                Whether you&apos;re looking to buy a flat or looking for a
+                trusted developer for your next project, get in touch with us.
+                We&apos;d be happy to discuss your requirements.
               </p>
+
+              {/* Same CTA as the footer's — reuses `whatsappUrl` so the
+                 pre-filled enquiry message stays in one place. */}
+              <a
+                href={siteConfig.whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-7 inline-flex items-center gap-2 rounded-full bg-inverse px-6 py-3 text-sm font-medium text-inverse-fg transition-transform hover:scale-[1.03]"
+              >
+                Enquire on WhatsApp
+                <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
+              </a>
             </Reveal>
 
             <Reveal delay={0.15} className="md:col-span-7">

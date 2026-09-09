@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "Completed Projects",
   description:
     "Residential developments completed and handed over by SS Holdings across Visakhapatnam.",
+  alternates: { canonical: "/projects" },
 };
 
 export default function CompletedProjectsPage() {

@@ -150,6 +150,28 @@ export function Hero() {
       unlockedRef.current = true;
     }
 
+    // Arriving at a section further down the page — "Back to Home" on a
+    // project, blog or gallery page returns to the section the visitor left
+    // from — means the walk-through has already been taken. Park the rail at
+    // its end, so the hero above them is the room they finished in and the
+    // page scrolls freely straight away instead of making them scrub the whole
+    // rail a second time to get back to where they were. `#top` is
+    // deliberately not a return: that is a trip to the hero itself, which
+    // should play from the start. `scrollY` catches the browser's own restore
+    // on a Back navigation, which carries no hash.
+    const hash = window.location.hash;
+    if ((hash !== "" && hash !== "#top") || window.scrollY > 0) {
+      progressRef.current = 1;
+      unlockedRef.current = true;
+      hintDismissed.current = true;
+      // Written onto the node rather than through `dragUnlocked`, because this
+      // can only be known on the client: as state it would make the server and
+      // the first client render disagree about `touch-action` and cost a
+      // hydration mismatch. React leaves the property alone until `unlocked`
+      // itself changes, and by then it is setting the same value.
+      el.style.touchAction = "pan-y";
+    }
+
     const bump = (deltaProgress: number) => {
       if (reducedMotion) return;
       // First Floor rides its rail a touch slower (see FF_SCRUB_SCALE).

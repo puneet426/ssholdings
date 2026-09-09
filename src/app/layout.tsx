@@ -10,42 +10,55 @@ import "@fontsource/inter/500.css";
 import "@fontsource/inter/600.css";
 import "./globals.css";
 import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
+import { siteConfig } from "@/lib/site-config";
 
-const siteUrl = "https://ssholdings.example.com";
+const siteUrl = siteConfig.url;
+
+// Description copy tracks the homepage — a residential developer in
+// Visakhapatnam, not a materials supplier. Keep it in step with About/WhyUs
+// if those claims (25 years, 35+ projects) ever change.
+const description =
+  "SS Holdings builds thoughtfully designed 2 & 3 BHK apartments in Visakhapatnam. 25 years of experience and 35+ projects delivered, with uncompromised quality, on-time delivery and all-inclusive pricing.";
+
+const shortDescription =
+  "Residential apartments in Visakhapatnam from SS Holdings — 25 years of experience, 35+ projects delivered, and homes built on quality, on-time delivery and all-inclusive pricing.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "SS Holdings | Premium Tiles, Surfaces & Interior Spaces",
+    default: "SS Holdings | Residential Builders & Developers in Visakhapatnam",
     template: "%s | SS Holdings",
   },
-  description:
-    "SS Holdings crafts premium tiles, flooring and interior surfaces for architects and designers. Explore our interactive space and discover materials built for spaces that last.",
+  description,
   keywords: [
-    "premium tiles",
-    "flooring",
-    "interior surfaces",
     "SS Holdings",
-    "architectural materials",
-    "marble tiles",
-    "porcelain tiles",
+    "builders in Visakhapatnam",
+    "real estate developers Visakhapatnam",
+    "flats for sale in Visakhapatnam",
+    "3 BHK apartments Visakhapatnam",
+    "Vastu compliant homes",
+    "residential projects Vizag",
+    "ongoing projects Visakhapatnam",
   ],
   openGraph: {
-    title: "SS Holdings | Premium Tiles, Surfaces & Interior Spaces",
-    description:
-      "Explore an interactive space and discover premium tile collections crafted for architects and designers.",
+    title: "SS Holdings | Residential Builders & Developers in Visakhapatnam",
+    description: shortDescription,
     url: siteUrl,
     siteName: "SS Holdings",
+    locale: "en_IN",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "SS Holdings | Premium Tiles, Surfaces & Interior Spaces",
-    description:
-      "Explore an interactive space and discover premium tile collections crafted for architects and designers.",
+    title: "SS Holdings | Residential Builders & Developers in Visakhapatnam",
+    description: shortDescription,
   },
   alternates: {
-    canonical: siteUrl,
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 

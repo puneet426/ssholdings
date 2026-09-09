@@ -9,6 +9,7 @@ import {
   MapPin,
   Ruler,
 } from "lucide-react";
+import { BackToHome } from "@/components/layout/BackToHome";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { projects, getProjectBySlug, type Project } from "@/data/projects";
@@ -33,6 +34,7 @@ export async function generateMetadata({
     description:
       project.content[0] ??
       `${project.name}, an SS Holdings development in ${project.location}.`,
+    alternates: { canonical: `/projects/${project.slug}` },
   };
 }
 
@@ -79,13 +81,11 @@ export default async function ProjectDetailsPage({
         <article className="relative overflow-hidden bg-bg pt-32 pb-16 text-fg lg:pt-40 lg:pb-24">
           <div className="relative z-10 mx-auto max-w-5xl px-6 lg:px-10">
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 text-sm text-fg/60 transition-colors hover:text-fg"
-              >
-                <ArrowLeft className="h-4 w-4" strokeWidth={1.5} />
-                Back to Home
-              </Link>
+              <BackToHome
+                section={
+                  project.status === "Completed" ? "projects" : "ongoing-projects"
+                }
+              />
               <span className="h-4 w-px bg-fg/15" aria-hidden="true" />
               <Link
                 href={listingHref}
@@ -121,6 +121,22 @@ export default async function ProjectDetailsPage({
                 className="h-full w-full object-cover"
               />
             </div>
+
+            {project.floorPlan && (
+              <figure className="mt-10">
+                <div className="overflow-hidden rounded-xl border border-fg/10 bg-white p-3 sm:p-5">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={project.floorPlan}
+                    alt={`${project.name} floor plan`}
+                    className="h-auto w-full"
+                  />
+                </div>
+                <figcaption className="mt-3 text-center text-xs uppercase tracking-[0.2em] text-fg/50">
+                  Typical Floor Plan
+                </figcaption>
+              </figure>
+            )}
 
             {project.brochure && (
               <div className="mt-8 flex justify-center">

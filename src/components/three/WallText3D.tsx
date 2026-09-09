@@ -126,7 +126,8 @@ function WallTextItem({
   // Lettering painted on a real surface rather than a caption floating in
   // front of the room: depth-tested, and never resized to fit the frame.
   const isDecal = !!entry.decal;
-  const text = entry.text;
+  // Phones can be given their own line breaks (see `textMobile`).
+  const text = isMobile && entry.textMobile ? entry.textMobile : entry.text;
   // A caption with an explicit `rotation` is a sticker: it holds that fixed
   // angle flat against its wall and never swims as the camera passes. One
   // without a `rotation` falls back to facing the viewer head-on. Derived
@@ -136,6 +137,15 @@ function WallTextItem({
   // the camera) until a hard reload — which reads as the text "moving".
   const [rx, ry, rz] = entry.rotation ?? [0, 0, 0];
   const hasRotation = !!entry.rotation;
+  // A screen-locked caption is carried in the camera's own frame rather than
+  // left at a point in the room — see `screenLocked` in gallery.ts for why the
+  // opening title has to be. Resolved to a vector once, per viewport.
+  const lockOffset = useMemo(() => {
+    const o = entry.screenLocked;
+    if (!o) return null;
+    const [x, y, z] = (isMobile && o.offsetMobile) || o.offset;
+    return new THREE.Vector3(x, y, z);
+  }, [entry.screenLocked, isMobile]);
   const fixedQuat = useMemo(
     () =>
       hasRotation
@@ -196,6 +206,18 @@ function WallTextItem({
         m.polygonOffsetFactor = -1;
         m.polygonOffsetUnits = -1;
       }
+    }
+
+    // Re-place a screen-locked caption at its camera-space offset every frame,
+    // so it lands on identical pixels however the rig moves — the camera walk
+    // and the mouse look-around both leave it alone. `updateMatrixWorld` first:
+    // CameraPathRig writes the camera's position and quaternion in its own
+    // useFrame and matrixWorld is otherwise only rebuilt at render time, so
+    // without it the caption is placed against the PREVIOUS frame's camera —
+    // sub-pixel at 60fps, hundreds of pixels in a throttled tab.
+    if (lockOffset) {
+      camera.updateMatrixWorld();
+      node.position.copy(lockOffset).applyMatrix4(camera.matrixWorld);
     }
 
     if (fixedQuat) node.quaternion.copy(fixedQuat);

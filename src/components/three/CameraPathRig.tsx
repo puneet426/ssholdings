@@ -70,6 +70,11 @@ export function CameraPathRig({
   );
 
   const smoothProgress = useRef(0);
+  // Whether `smoothProgress` has been seeded from the rail's actual position.
+  // The first frame snaps to it rather than easing up from 0: on a return to a
+  // section below the hero the rail is already parked at its end, and damping
+  // there from 0 would fast-forward the whole walk-through behind the visitor.
+  const primed = useRef(false);
   const smoothPointer = useRef({ x: 0, y: 0 });
   const announced = useRef(false);
 
@@ -105,6 +110,11 @@ export function CameraPathRig({
     if (!empty) return;
     const delta = Math.min(rawDelta, MAX_DELTA);
     const target = THREE.MathUtils.clamp(progressRef.current, 0, 1);
+
+    if (!primed.current) {
+      primed.current = true;
+      smoothProgress.current = target;
+    }
 
     if (reducedMotion) {
       smoothProgress.current = target;

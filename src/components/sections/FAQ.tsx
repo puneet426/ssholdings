@@ -26,7 +26,8 @@ const faqs = [
 ];
 
 export function FAQ() {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  // Every question starts closed — the answers open only on click.
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
     <section

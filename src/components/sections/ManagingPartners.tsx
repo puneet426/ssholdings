@@ -56,10 +56,13 @@ export function ManagingPartners() {
   return (
     <section
       id="managing"
-      className="relative overflow-hidden bg-panel py-10 text-fg sm:py-12 lg:py-14"
+      className="relative overflow-hidden bg-panel py-10 text-fg sm:py-12 lg:py-20"
     >
-      <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-10">
-        <Reveal className="max-w-xl">
+      {/* Stacked on phones/tablets; from lg the copy and the portraits sit
+         side by side so the pair stops hugging the left edge of a wide
+         viewport. */}
+      <div className="relative z-10 mx-auto grid max-w-7xl px-6 lg:grid-cols-12 lg:items-center lg:gap-x-16 lg:px-10">
+        <Reveal className="max-w-xl lg:col-span-5">
           <div className="h-px w-12 bg-gradient-to-r from-accent to-transparent" />
           <h2 className="font-display mt-4 text-2xl sm:text-3xl font-medium text-balance">
             Managing Partners
@@ -72,11 +75,11 @@ export function ManagingPartners() {
           </p>
         </Reveal>
 
-        <RevealGroup className="mt-8 grid max-w-sm grid-cols-2 gap-x-5 gap-y-8 sm:gap-x-6">
+        <RevealGroup className="mt-8 grid max-w-sm grid-cols-2 gap-x-5 gap-y-8 sm:gap-x-6 lg:col-span-7 lg:mt-0 lg:ml-auto lg:max-w-xl lg:gap-x-12">
           {partners.map((partner) => (
             <motion.div key={partner.name} variants={revealItemVariants}>
               <Portrait name={partner.name} image={partner.image} />
-              <h3 className="font-display mt-3 text-center text-sm font-semibold text-balance text-accent sm:text-base">
+              <h3 className="font-display mt-3 text-center text-sm font-semibold text-balance text-accent sm:text-base lg:mt-5">
                 {partner.name}
               </h3>
             </motion.div>

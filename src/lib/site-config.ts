@@ -3,6 +3,13 @@
 
 export const siteConfig = {
   /**
+   * The live origin, with no trailing slash. Every absolute URL the site
+   * emits — canonicals, Open Graph, the sitemap and robots.txt — is built
+   * from this, so a domain change is a single edit here.
+   */
+  url: "https://ssholdings.co",
+
+  /**
    * The business WhatsApp number in wa.me form (country code, digits only).
    * The enquiry form opens a chat with this number, pre-filled with the
    * visitor's enquiry.
@@ -24,7 +31,7 @@ export const siteConfig = {
 
   /** Real contact details — shown in the footer and the homepage Contact section. */
   contact: {
-    phone: "9100673147",
+    phone: "91006 73147",
     email: "info@ssholdings.co",
   },
 
