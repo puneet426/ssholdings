@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Menu, X, Search } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { navLinks } from "@/data/nav";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { MobileMenu } from "./MobileMenu";
@@ -52,13 +52,6 @@ export function Header() {
             </ul>
 
             <div className="flex items-center gap-2 sm:gap-3">
-              <button
-                type="button"
-                aria-label="Search"
-                className="hidden sm:flex h-9 w-9 items-center justify-center rounded-full text-fg transition-colors hover:bg-fg/10"
-              >
-                <Search className="h-4 w-4" strokeWidth={1.5} />
-              </button>
               <ThemeToggle />
               <button
                 type="button"

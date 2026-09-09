@@ -3,16 +3,16 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { BlogCard } from "@/components/blog/BlogCard";
-import { blogPosts } from "@/data/blog";
+import { ShowcaseVideo } from "@/components/sections/ShowcaseVideo";
+import { showcaseVideos } from "@/data/projectShowcase";
 
 export const metadata: Metadata = {
-  title: "Blogs",
+  title: "Gallery",
   description:
-    "Notes on construction quality, materials and design from the SS Holdings team, for anyone planning their next property in Visakhapatnam.",
+    "A closer look at SS Holdings, with walkthroughs of our spaces, surfaces and finishes.",
 };
 
-export default function BlogsPage() {
+export default function GalleryPage() {
   return (
     <>
       <Header />
@@ -29,21 +29,20 @@ export default function BlogsPage() {
 
             <div className="mt-10 max-w-2xl">
               <p className="text-xs uppercase tracking-[0.3em] text-fg/50">
-                The SS Holdings Journal
+                A Closer Look
               </p>
               <h1 className="font-display mt-4 text-4xl font-medium text-balance sm:text-5xl">
-                Blogs
+                Gallery
               </h1>
               <p className="mt-5 leading-relaxed text-fg/70">
-                Notes on construction quality, design decisions and what
-                actually makes a home worth building, written for anyone
-                planning their next property in Visakhapatnam and beyond.
+                Step inside and explore the quality of SS Holdings. Every
+                walkthrough, in full.
               </p>
             </div>
 
-            <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {blogPosts.map((post) => (
-                <BlogCard key={post.slug} post={post} />
+            <div className="mt-16 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-3">
+              {showcaseVideos.map((video) => (
+                <ShowcaseVideo key={video.id} path={video.path} />
               ))}
             </div>
           </div>

@@ -1,5 +1,5 @@
 import { Reveal } from "@/components/ui/Reveal";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 import { siteConfig } from "@/lib/site-config";
 import { EnquiryForm } from "./EnquiryForm";
 
@@ -14,7 +14,7 @@ export function Contact() {
           <div className="grid gap-12 md:grid-cols-12 md:gap-16">
             <Reveal className="md:col-span-5">
               <h2 className="font-display text-3xl sm:text-4xl font-medium text-balance">
-                Let&apos;s talk about your project.
+                Contact Us
               </h2>
               <p className="mt-5 text-fg/65 leading-relaxed max-w-md">
                 Whether you&apos;re specifying materials for a single room or
@@ -24,7 +24,7 @@ export function Contact() {
             </Reveal>
 
             <Reveal delay={0.15} className="md:col-span-7">
-              <div className="grid gap-6 sm:grid-cols-3">
+              <div className="grid gap-6 sm:grid-cols-2">
                 <div className="flex flex-col gap-3">
                   <Mail className="h-5 w-5 text-accent-soft" strokeWidth={1.5} />
                   <p className="text-sm text-fg/50">Email</p>
@@ -34,11 +34,6 @@ export function Contact() {
                   <Phone className="h-5 w-5 text-accent-soft" strokeWidth={1.5} />
                   <p className="text-sm text-fg/50">Phone</p>
                   <p className="text-sm">{siteConfig.contact.phone}</p>
-                </div>
-                <div className="flex flex-col gap-3">
-                  <MapPin className="h-5 w-5 text-accent-soft" strokeWidth={1.5} />
-                  <p className="text-sm text-fg/50">Showroom</p>
-                  <p className="text-sm">{siteConfig.contact.address}</p>
                 </div>
               </div>
             </Reveal>

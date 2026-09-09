@@ -1,4 +1,4 @@
-import { ArrowRight, Mail, MapPin, Phone } from "lucide-react";
+import { ArrowRight, Mail, Phone } from "lucide-react";
 import { navLinks } from "@/data/nav";
 import { siteConfig } from "@/lib/site-config";
 
@@ -128,13 +128,6 @@ export function Footer() {
               Get in Touch
             </p>
             <ul className="mt-4 space-y-3 text-sm text-fg/70">
-              <li className="flex items-start gap-2.5">
-                <MapPin
-                  className="mt-0.5 h-4 w-4 shrink-0 text-accent-soft"
-                  strokeWidth={1.5}
-                />
-                {siteConfig.contact.address}
-              </li>
               <li className="flex items-center gap-2.5">
                 <Phone
                   className="h-4 w-4 shrink-0 text-accent-soft"

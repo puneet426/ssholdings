@@ -1,87 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { useInView } from "framer-motion";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { Reveal } from "@/components/ui/Reveal";
+import { ShowcaseVideo } from "@/components/sections/ShowcaseVideo";
 import { showcaseVideos } from "@/data/projectShowcase";
-import { projectVideoPoster, projectVideoUrl } from "@/lib/cloudinary";
 
-/**
- * A bare video tile: no title, no caption, no controls, no sound.
- *
- * Playback is gated on *this tile's* own visibility, not the section's — four
- * simultaneous decodes was the remaining lag, and on mobile (single column)
- * only one or two tiles are ever on screen at once. A tile loads its `src`
- * the first time it nears the viewport and just pauses/resumes on every
- * scroll in and out after that (never re-fetches).
- *
- * The ~2s intro card and the baked-in side pillarbox are both handled in the
- * Cloudinary URL (see lib/cloudinary), so this just plays the delivered clip
- * on a native `loop` — no `ended` handler, no per-loop seek.
- */
-function ShowcaseVideo({ path }: { path: string }) {
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  // Small `margin` so a tile pre-buffers just before it scrolls in — kept
-  // tight on purpose so tiles well off screen stay paused and don't burn a
-  // decoder.
-  const active = useInView(wrapRef, { margin: "150px 0px 150px 0px" });
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video || !path) return;
-
-    if (active) {
-      // preload="none" fetches nothing until asked: assigning src and
-      // calling play() is what kicks off the load.
-      if (!video.src) video.src = projectVideoUrl(path);
-      video.play().catch(() => {});
-    } else {
-      video.pause();
-    }
-  }, [active, path]);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    // A backgrounded tab gets its video decoder throttled or dropped, which
-    // showed up as playback "just stopping" after a while. Pause on hide,
-    // resume on return if the tile is still in view.
-    const onVisibilityChange = () => {
-      if (document.hidden) video.pause();
-      else if (active && video.src) video.play().catch(() => {});
-    };
-    document.addEventListener("visibilitychange", onVisibilityChange);
-    return () =>
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-  }, [active]);
-
-  if (!path) {
-    return (
-      <div
-        ref={wrapRef}
-        className="aspect-1886/1060 rounded-xl border border-dashed border-fg/15 bg-fg/3"
-      />
-    );
-  }
-
-  return (
-    <div
-      ref={wrapRef}
-      className="aspect-1886/1060 overflow-hidden rounded-xl border border-fg/10 bg-well"
-    >
-      <video
-        ref={videoRef}
-        className="h-full w-full object-cover"
-        muted
-        loop
-        playsInline
-        preload="none"
-        poster={projectVideoPoster(path)}
-      />
-    </div>
-  );
-}
+// A teaser pair only — the full set lives on /gallery.
+const previewVideos = showcaseVideos.slice(1, 3);
 
 export function ProjectShowcase() {
   return (
@@ -96,14 +22,24 @@ export function ProjectShowcase() {
             A Closer Look
           </p>
           <h2 className="font-display mt-4 text-3xl sm:text-4xl font-medium text-balance">
-            Step inside and explore the quality of SS Holdings.
+            Gallery
           </h2>
         </Reveal>
 
         <Reveal className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-3">
-          {showcaseVideos.map((video) => (
+          {previewVideos.map((video) => (
             <ShowcaseVideo key={video.id} path={video.path} />
           ))}
+        </Reveal>
+
+        <Reveal delay={0.15} className="mt-12 flex justify-center">
+          <Link
+            href="/gallery"
+            className="inline-flex items-center gap-2 rounded-full border border-fg/20 px-7 py-3 text-sm font-medium text-fg transition-colors hover:bg-fg/10"
+          >
+            View Gallery
+            <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
+          </Link>
         </Reveal>
       </div>
     </section>

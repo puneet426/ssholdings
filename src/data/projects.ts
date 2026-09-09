@@ -1,98 +1,321 @@
 // Central project data — the ONLY place project content should live. To add
-// a new project: drop its image into `public/images/projects/` and append a
-// new object below (`slug` becomes the URL at /projects/<slug>). Nothing
-// else needs to change — the homepage section and both project pages all
-// read from here.
+// a project: drop its image into `public/images/projects/` and append an
+// object below (`slug` becomes the URL at /projects/<slug>). The homepage
+// sections, the /projects listing and the detail pages all read from here.
 //
-// NOTE: Placeholder / dummy copy. Replace name, description, content,
-// location, tags and image for each project with real SS Holdings content
-// before launch.
+// Each homepage section shows the two projects flagged `featured` for its
+// status; every project appears on /projects under its status heading.
 
-export type ProjectStatus = "Completed" | "Ongoing" | "Upcoming";
+export type ProjectStatus = "Completed" | "Ongoing";
+
+export interface SpecItem {
+  name: string;
+  detail: string;
+}
+
+export interface SpecGroup {
+  title: string;
+  items: SpecItem[];
+}
 
 export interface Project {
-  /** Unique URL segment — used at /projects/<slug>. Keep it lowercase, hyphenated. */
+  /** Unique URL segment — used at /projects/<slug>. Lowercase, hyphenated. */
   slug: string;
   name: string;
-  /** One or two sentences shown on project cards. */
-  description: string;
-  /** Full project description — one paragraph per array entry. */
-  content: string[];
   location: string;
-  type: string;
   status: ProjectStatus;
-  /** Display year, e.g. "2025". */
-  year: string;
-  area: string;
-  tags: string[];
+  /** Build time in months — recorded for completed projects. */
+  constructionMonths?: number;
+  /** Home sizes as listed by sales, e.g. "3 BHK: 1,300 sq. ft." */
+  homeSizes: string[];
+  /** Scale facts shown alongside the sizes, e.g. "40 Homes". */
+  scale?: string[];
+  /** Full description — one paragraph per entry. */
+  content: string[];
   /** Path under /public — e.g. "/images/projects/project1.png". */
   image: string;
-  /** Shows this project on the homepage's Projects section (max 2 used). */
+  /** One of the two projects shown for its status on the homepage. */
   featured?: boolean;
+  /** The flagship project: brochure + full specification sheet. */
+  specialFocus?: boolean;
+  /** Path under /public to the brochure PDF. */
+  brochure?: string;
+  specs?: SpecGroup[];
 }
 
 export const projects: Project[] = [
   {
-    slug: "coastal-heights-residency",
-    name: "Coastal Heights Residency",
-    description:
-      "Premium residential apartments overlooking Rushikonda beach, designed for families who want resort-style living as their everyday address.",
-    location: "Rushikonda, Visakhapatnam, Andhra Pradesh",
-    type: "Premium Residential Apartments",
+    slug: "ss-orchids",
+    name: "SS Orchids",
+    location: "Pothinamallayya Palem",
     status: "Completed",
-    year: "2025",
-    area: "2.8 Acres",
-    tags: ["Residential", "Luxury Living", "Completed"],
+    constructionMonths: 16,
+    homeSizes: ["3 BHK: 1,300 sq. ft."],
     image: "/images/projects/project1.png",
     featured: true,
     content: [
-      "Coastal Heights Residency sits minutes from Rushikonda beach, built for buyers who wanted sea-facing living without leaving the conveniences of the city behind. The layout was planned around unobstructed views and cross-ventilation, so the coastal breeze reaches every apartment rather than just the units facing the water.",
-      "Each home was finished with large-format vitrified flooring, modular kitchens, and premium bathroom fittings as standard rather than as an upgrade package. Common areas include a landscaped podium garden, a clubhouse, and dedicated visitor parking — details that are easy to skip on paper but matter every single day to the people living there.",
-      "Construction followed a strict material and inspection protocol at every stage, from the raft foundation through to final finishing, with third-party structural checks at key milestones. The project was handed over to its first residents in 2025, on schedule and with every unit passing final quality inspection before keys were issued.",
-      "Today, Coastal Heights Residency is a fully occupied community of 2.8 acres — a reference point for what SS Holdings means when it talks about building homes rather than just housing units.",
+      "SS Orchids brings together a great location, thoughtful design and comfortable living. Set close to NH-16, with a park nearby and easy access to key parts of Visakhapatnam, it offers the convenience of city living while retaining a calm residential feel.",
+      "The project offers 3 BHK homes of 1,300 sq. ft., planned to make everyday living comfortable and practical. With well-proportioned rooms, balconies and thoughtfully arranged living spaces, each home is designed to feel open, bright and easy to live in.",
+      "With its elegant architecture, peaceful surroundings and focus on everyday comfort, SS Orchids is designed for families looking for a warm, modern home with lasting value. It brings together the essentials of good living: a convenient location, comfortable spaces and the quality you expect from an SS Holdings home.",
     ],
   },
   {
-    slug: "harbour-view-enclave",
-    name: "Harbour View Enclave",
-    description:
-      "A gated residential community in Madhurawada built around wide internal roads, shared green spaces, and long-term neighborhood value.",
-    location: "Madhurawada, Visakhapatnam, Andhra Pradesh",
-    type: "Gated Residential Community",
-    status: "Ongoing",
-    year: "2026",
-    area: "4.2 Acres",
-    tags: ["Residential", "Gated Community", "Ongoing"],
+    slug: "ss-harmony",
+    name: "SS Harmony",
+    location: "Yendada",
+    status: "Completed",
+    constructionMonths: 18,
+    homeSizes: ["3 BHK: 2,110 & 2,070 sq. ft."],
     image: "/images/projects/project2.png",
     featured: true,
     content: [
-      "Harbour View Enclave is being developed across 4.2 acres in Madhurawada, one of Visakhapatnam's fastest-growing residential corridors. The master plan sets aside a significant share of the site for internal roads, landscaped open space, and community amenities rather than maximizing built-up area at the expense of everyday livability.",
-      "The gated community is being built in phases, with structural work on the first phase already complete and finishing work underway. Each block is designed with generous setbacks, dedicated visitor parking, and a central clubhouse that will anchor the community once possession begins.",
-      "Utilities — water, power backup, sewage treatment, and rainwater harvesting — are being planned at the community level from day one, rather than retrofitted after residents move in. This is the same planning discipline SS Holdings applies to every gated development, regardless of scale.",
-      "Harbour View Enclave is on track for phased handover starting 2026, with regular construction updates shared with booked homeowners throughout the build.",
+      "Set between Yendada and Rushikonda, SS Harmony offers a peaceful home in one of Visakhapatnam's sought-after residential areas. With Rushikonda Beach, IT SEZ, schools, hospitals, temples (Iskcon and TTD Temples) and everyday conveniences close by, you get the best of a quiet neighbourhood without giving up connectivity.",
+      "Designed for comfortable and spacious family living, SS Harmony brings together thoughtful layouts, generous balconies and well-planned spaces that let natural light and fresh air flow through the home. With Vastu-compliant planning and a calm residential setting, every home is designed to feel open, peaceful and welcoming.",
+      "More than just a well-connected address, SS Harmony is designed to give you a refined and comfortable way of living. Beautiful architecture, quality construction and peaceful surroundings come together to create a home where you can slow down, relax and enjoy everyday life.",
     ],
   },
   {
-    slug: "green-valley-villas",
-    name: "Green Valley Villas",
-    description:
-      "An upcoming villa community in Bheemili offering larger private plots, independent layouts, and a quieter pace than high-rise living.",
-    location: "Bheemili, Visakhapatnam, Andhra Pradesh",
-    type: "Luxury Villas",
-    status: "Upcoming",
-    year: "2027",
-    area: "6.5 Acres",
-    tags: ["Villas", "Luxury", "Upcoming"],
+    slug: "avadhani-legacy",
+    name: "Avadhani Legacy",
+    location: "East Point Colony",
+    status: "Completed",
+    constructionMonths: 18,
+    homeSizes: ["3 BHK: 2,105 & 2,030 sq. ft."],
     image: "/images/projects/project3.png",
     content: [
-      "Green Valley Villas is planned across 6.5 acres in Bheemili, designed for buyers who want the space and privacy of an independent home without giving up the security and shared amenities of a planned community.",
-      "Each villa plot has been sized generously enough for private outdoor space, and the internal layout has been planned around wider roads, mature tree cover, and a lower overall density than typical villa developments in the area — fewer units, more room to breathe.",
-      "Design work and approvals are underway, with site development and infrastructure — internal roads, drainage, landscaping — planned to begin ahead of individual villa construction. Vastu-aligned layouts will be offered across the available plot configurations.",
-      "Green Valley Villas is targeted for phased development starting 2027. Early interest is already being registered by families looking to move from apartment living into a villa community without leaving Visakhapatnam.",
+      "Set in East Point Colony, just 2 mins from Beach Road, Avadhani Legacy brings together the calm of a peaceful residential neighbourhood and the convenience of being close to schools, hospitals, shopping and entertainment. Nestled beside a vast open space, the project is designed to offer a quiet and pleasant living experience.",
+      "The homes are spacious 3 BHK residences of 2,030 and 2,105 sq. ft., thoughtfully planned for natural light, cross-ventilation and comfortable everyday living. With Vastu-compliant planning, generous balconies and well-planned interiors, every home is designed to feel open, warm and welcoming.",
+    ],
+  },
+  {
+    slug: "ss-parkview",
+    name: "SS Parkview",
+    location: "Midhilapuri Colony",
+    status: "Completed",
+    constructionMonths: 15,
+    homeSizes: ["2 BHK: 1,110 sq. ft.", "3 BHK: 1,510 sq. ft."],
+    image: "/images/projects/project1.png",
+    content: [
+      "SS Park View is designed as a peaceful family home, bringing together modern architecture, comfortable spaces and a calm residential setting. With easy access to NH-16 and Madhurawada's growing surroundings, it offers the convenience of the city while giving you a comfortable place to come home to.",
+      "Thoughtfully planned for comfortable family living, the homes offer well-sized bedrooms, spacious living and dining areas, balconies and practical everyday spaces. The design focuses on natural light, ventilation and an easy flow between spaces, creating a home that feels open, bright and welcoming.",
+      "With a clean, contemporary design and a strong focus on everyday comfort, SS Park View brings together quality, convenience and peaceful living. It is a home designed for families who value a calm environment, thoughtful planning and the simple pleasure of coming home to a place that feels right.",
+    ],
+  },
+  {
+    slug: "ss-pearl",
+    name: "SS Pearl",
+    location: "Midhilapuri Colony",
+    status: "Completed",
+    constructionMonths: 15,
+    // TODO: home sizes and description for SS Pearl were not supplied — the
+    // card and detail page fall back to location and build time until they are.
+    homeSizes: [],
+    image: "/images/projects/project2.png",
+    content: [],
+  },
+  {
+    slug: "ss-courtyard",
+    name: "SS Courtyard",
+    location: "Madhurawada",
+    status: "Ongoing",
+    homeSizes: [
+      "2 BHK: 1,190, 1,280 & 1,210 sq. ft.",
+      "3 BHK: 1,465 & 1,790 sq. ft.",
+    ],
+    scale: ["40 Homes", "2 Blocks"],
+    image: "/images/projects/project3.png",
+    featured: true,
+    specialFocus: true,
+    brochure: "/images/projects/ss-courtyard.pdf",
+    content: [
+      "SS Courtyard is designed as a comfortable family home, combining thoughtful planning with quality construction and a peaceful residential setting. Practical layouts and a warm atmosphere make it a place where everyday living feels easy, comfortable and welcoming.",
+    ],
+    specs: [
+      {
+        title: "Structure",
+        items: [
+          {
+            name: "Earthquake-Resistant RCC Structure",
+            detail: "Designed for greater structural safety and stability.",
+          },
+          {
+            name: "Solid Red Brick Walls",
+            detail: "Strong, durable walls for a solid and dependable home.",
+          },
+          {
+            name: "Smooth Internal Plaster & Putty Finish",
+            detail: "Gives walls a clean, refined finish.",
+          },
+        ],
+      },
+      {
+        title: "Painting",
+        items: [
+          {
+            name: "Premium Acrylic Interior Paint",
+            detail: "Smooth finish that keeps your interiors looking fresh.",
+          },
+          {
+            name: "Weather-Proof Exterior Paint",
+            detail:
+              "Better protection for the building exterior against weather conditions.",
+          },
+        ],
+      },
+      {
+        title: "Flooring & Wall Finish",
+        items: [
+          {
+            name: "Large 800 × 1600 mm GVT Tiles",
+            detail:
+              "Creates a spacious, modern and premium look with fewer visible joints.",
+          },
+          {
+            name: "Anti-Skid Balcony Tiles",
+            detail: "Added grip for safer everyday use.",
+          },
+          {
+            name: "Non-Slip Bathroom Flooring",
+            detail: "Helps provide better safety in wet areas.",
+          },
+          {
+            name: "Finished Common Areas",
+            detail:
+              "Granite/GVT flooring gives corridors and staircases a clean, premium look.",
+          },
+        ],
+      },
+      {
+        title: "Doors & Windows",
+        items: [
+          {
+            name: "Teak-Framed Main Door",
+            detail:
+              "A strong and premium entrance that adds to the character of your home.",
+          },
+          {
+            name: "Quality Door Hardware",
+            detail: "Smooth, reliable and convenient everyday use.",
+          },
+          {
+            name: "UPVC Sliding Windows with Mosquito Mesh",
+            detail:
+              "Easy operation, ventilation and added protection from insects.",
+          },
+          {
+            name: "3-Track Sliding System",
+            detail:
+              "Allows smoother movement and better flexibility when opening windows.",
+          },
+        ],
+      },
+      {
+        title: "Bathrooms",
+        items: [
+          {
+            name: "Jaguar / Parryware Fittings",
+            detail: "Trusted brands for reliable everyday performance.",
+          },
+          {
+            name: "Hot & Cold Shower Mixers",
+            detail: "Convenient temperature control in every bathroom.",
+          },
+          {
+            name: "Jaguar / RAK / Kohler Sanitaryware",
+            detail: "Quality fixtures for a refined bathroom experience.",
+          },
+        ],
+      },
+      {
+        title: "Electrical",
+        items: [
+          {
+            name: "Concealed Copper Wiring",
+            detail: "Safer, cleaner wiring hidden within the walls.",
+          },
+          {
+            name: "Branded Switches",
+            detail: "Reliable switches for everyday use.",
+          },
+          {
+            name: "Dedicated Appliance Points",
+            detail:
+              "Ready points for geysers, chimney, refrigerator, microwave, oven, purifier and washing machine.",
+          },
+          {
+            name: "AC Provision in Bedrooms",
+            detail:
+              "Makes AC installation easier without major electrical changes.",
+          },
+          {
+            name: "3-Phase Power Supply",
+            detail: "Supports higher electrical loads efficiently.",
+          },
+          {
+            name: "TV, Telephone & Internet Points",
+            detail:
+              "Convenient connectivity in the Master Bedroom and Drawing Room.",
+          },
+        ],
+      },
+      {
+        title: "Power Backup",
+        items: [
+          {
+            name: "20 KVA DG Backup Per Flat",
+            detail:
+              "Keeps essential services running during power interruptions.",
+          },
+        ],
+      },
+      {
+        title: "Lift",
+        items: [
+          {
+            name: "Kone Passenger Lift",
+            detail: "Convenient access up to the 5th floor.",
+          },
+        ],
+      },
+      {
+        title: "Security",
+        items: [
+          {
+            name: "CCTV in Ground Floor & Corridors",
+            detail: "Adds an extra layer of security and peace of mind.",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "jagannadha-signature",
+    name: "Jagannadha Signature",
+    location: "East Point Colony",
+    status: "Ongoing",
+    homeSizes: ["3 BHK: 2,320 sq. ft."],
+    image: "/images/projects/project1.png",
+    featured: true,
+    content: [
+      "Jagannadha Signature brings modern luxury to a peaceful residential setting, located close to Beach Road in East Point Colony area. With VUDA Park, the beach, schools and everyday conveniences nearby, it offers the comfort of being well connected while still giving you a calm place to come home to.",
+      "The project offers spacious 3 BHK homes of 2,320 sq. ft., thoughtfully planned to give families generous living spaces and a comfortable flow between rooms. With Vastu-compliant planning, large balconies and well-designed interiors, every home is created to feel open, peaceful and welcoming.",
+      "Designed around modern, luxurious living, Jagannadha Signature combines privacy, comfort and a refined sense of space. From the carefully planned homes to the peaceful surroundings and convenient location, it is a place designed not just to live in, but to slow down, feel at ease and enjoy coming home every day.",
     ],
   },
 ];
 
 export function getProjectBySlug(slug: string): Project | undefined {
   return projects.find((project) => project.slug === slug);
+}
+
+/** Every project with the given status, in listing order. */
+export function projectsByStatus(status: ProjectStatus): Project[] {
+  return projects.filter((project) => project.status === status);
+}
+
+/** The (up to two) projects shown for a status on the homepage. */
+export function featuredByStatus(status: ProjectStatus): Project[] {
+  return projectsByStatus(status)
+    .filter((project) => project.featured)
+    .slice(0, 2);
 }

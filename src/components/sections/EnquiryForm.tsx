@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent, type ReactNode } from "react";
 import { CheckCircle2, ChevronDown } from "lucide-react";
+import { siteConfig } from "@/lib/site-config";
 
 interface EnquiryFormValues {
   name: string;
@@ -40,7 +41,11 @@ function validate(values: EnquiryFormValues): FormErrors {
   } else if (!EMAIL_PATTERN.test(values.email.trim())) {
     errors.email = "Please enter a valid email address.";
   }
-  if (!values.phone.trim()) errors.phone = "Please enter your phone number.";
+  if (!values.phone.trim()) {
+    errors.phone = "Please enter your phone number.";
+  } else if (values.phone.length < 10) {
+    errors.phone = "Please enter a 10-digit phone number.";
+  }
   if (!values.subject.trim()) errors.subject = "Please select an enquiry type.";
   if (!values.message.trim()) errors.message = "Please add a short message.";
   return errors;
@@ -69,13 +74,31 @@ function FieldError({ id, message }: { id: string; message?: string }) {
   );
 }
 
+/** Builds the WhatsApp message body from a valid submission. */
+function whatsappLink(values: EnquiryFormValues) {
+  const lines = [
+    "New enquiry from the SS Holdings website",
+    "",
+    `Name: ${values.name.trim()}`,
+    `Email: ${values.email.trim()}`,
+    `Phone: ${values.phone}`,
+    `Enquiry type: ${values.subject}`,
+    "",
+    values.message.trim(),
+  ];
+  return `https://wa.me/${siteConfig.whatsappNumber}?text=${encodeURIComponent(
+    lines.join("\n")
+  )}`;
+}
+
 /**
- * Frontend-only enquiry form card — rendered inside the homepage's Contact
- * section (`src/components/sections/Contact.tsx`), not a section of its
- * own. Validates, shows a success message, and resets — nothing is sent or
- * stored anywhere. To wire this up to a real backend later, swap the body
- * of `handleSubmit`'s success branch for a real request and keep everything
- * else as-is.
+ * Enquiry form card — rendered inside the homepage's Contact section
+ * (`src/components/sections/Contact.tsx`), not a section of its own.
+ *
+ * On a valid submission it opens WhatsApp with the enquiry pre-filled and
+ * addressed to `siteConfig.whatsappNumber`; the visitor sends it from their
+ * own account. Nothing is posted or stored server-side — add that in the
+ * success branch of `handleSubmit` if enquiries ever need to be logged too.
  */
 export function EnquiryForm() {
   const [values, setValues] = useState<EnquiryFormValues>(initialValues);
@@ -97,8 +120,10 @@ export function EnquiryForm() {
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
-    // Intentionally the only thing that happens on a valid submission —
-    // no request is made, nothing is persisted.
+    // Opened straight from the submit handler so the browser treats it as a
+    // user gesture and doesn't block it as a pop-up.
+    window.open(whatsappLink(values), "_blank", "noopener,noreferrer");
+
     setSubmitted(true);
     setValues(initialValues);
   }
@@ -111,7 +136,10 @@ export function EnquiryForm() {
             className="mt-0.5 h-5 w-5 shrink-0 text-accent-soft"
             strokeWidth={1.5}
           />
-          <p>Thank you! Your enquiry has been sent successfully.</p>
+          <p>
+            Thank you! WhatsApp should have opened with your enquiry ready to
+            send. Tap send there and we&apos;ll get back to you shortly.
+          </p>
         </div>
       )}
 
@@ -156,11 +184,17 @@ export function EnquiryForm() {
                 <input
                   id="enquiry-phone"
                   type="tel"
+                  inputMode="numeric"
                   autoComplete="tel"
+                  maxLength={10}
                   value={values.phone}
-                  onChange={(e) => updateField("phone", e.target.value)}
+                  // Digits only: anything else (letters, spaces, symbols) is
+                  // dropped as it is typed or pasted.
+                  onChange={(e) =>
+                    updateField("phone", e.target.value.replace(/\D/g, "").slice(0, 10))
+                  }
                   className={fieldClasses}
-                  placeholder="+91 00000 00000"
+                  placeholder="10-digit mobile number"
                   aria-invalid={!!errors.phone}
                   aria-describedby={errors.phone ? "enquiry-phone-error" : undefined}
                 />

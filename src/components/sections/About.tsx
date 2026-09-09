@@ -1,5 +1,13 @@
 import { Reveal } from "@/components/ui/Reveal";
 
+// The section is three plain statements now — no display headline above them,
+// so "About Us" carries the heading semantics for the section.
+const points = [
+  "With 25 years of experience and 35+ projects delivered, SS Holdings has built a reputation for quality, trust, and reliability.",
+  "We create thoughtfully designed homes with a strong focus on quality construction, attention to detail, and delivering every project on time, every time.",
+  "For us, every home is more than a project. It is a promise we take seriously.",
+];
+
 export function About() {
   return (
     <section
@@ -10,22 +18,22 @@ export function About() {
         <div className="grid gap-10 md:grid-cols-12 md:gap-16">
           <Reveal className="md:col-span-4">
             <div className="h-px w-12 bg-gradient-to-r from-accent to-transparent" />
-            <p className="mt-4 text-xs uppercase tracking-[0.3em] text-fg/50">
-              About SS Holdings
-            </p>
+            <h2 className="mt-4 text-xs uppercase tracking-[0.3em] text-fg/50">
+              About Us
+            </h2>
           </Reveal>
 
           <Reveal delay={0.1} className="md:col-span-8">
-            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-medium leading-tight text-balance">
-              We make surfaces that architects can build a room around.
-            </h2>
-            <p className="mt-6 max-w-2xl text-fg/70 leading-relaxed">
-              SS Holdings works at the intersection of material science and
-              interior design — producing tiles and surfaces engineered for
-              durability without compromising on the tactile, visual quality
-              a premium space demands. Every collection starts with how a
-              surface will actually be lived on.
-            </p>
+            <ul className="max-w-2xl space-y-5">
+              {points.map((point) => (
+                <li
+                  key={point}
+                  className="text-lg leading-relaxed text-fg/80 sm:text-xl"
+                >
+                  {point}
+                </li>
+              ))}
+            </ul>
           </Reveal>
         </div>
       </div>

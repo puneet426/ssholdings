@@ -2,29 +2,21 @@
 
 import { useEffect, useRef, type MutableRefObject } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Volume2, VolumeX } from "lucide-react";
 
 interface GalleryChromeProps {
   progressRef: MutableRefObject<number>;
   hintVisible: boolean;
-  muted: boolean;
-  onToggleSound: () => void;
 }
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 const TICKS = 9;
 
 /**
- * The non-nav overlay: a vertical scroll-progress read-out and a sound toggle
- * bottom-right, plus the "scroll to explore" onboarding line. Polls
+ * The non-nav overlay: a vertical scroll-progress read-out bottom-right, plus
+ * the "scroll to explore" onboarding line. Polls
  * `progressRef` on rAF so it never forces a React render per frame.
  */
-export function GalleryChrome({
-  progressRef,
-  hintVisible,
-  muted,
-  onToggleSound,
-}: GalleryChromeProps) {
+export function GalleryChrome({ progressRef, hintVisible }: GalleryChromeProps) {
   const ticksRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -47,23 +39,6 @@ export function GalleryChrome({
   return (
     <>
       <div className="pointer-events-auto absolute bottom-6 right-6 z-40 flex items-end gap-4">
-        <button
-          type="button"
-          onClick={onToggleSound}
-          aria-label={muted ? "Unmute ambient sound" : "Mute ambient sound"}
-          className="flex h-9 w-9 items-center justify-center rounded-full text-paper/80 transition-colors hover:bg-paper/10 hover:text-paper"
-        >
-          {muted ? (
-            <VolumeX className="h-4 w-4" strokeWidth={1.5} />
-          ) : (
-            <Volume2 className="h-4 w-4" strokeWidth={1.5} />
-          )}
-        </button>
-
-        <span className="mb-1 text-[11px] uppercase tracking-[0.3em] text-paper/60">
-          En.
-        </span>
-
         <div ref={ticksRef} className="mb-1 flex h-10 flex-col justify-between">
           {Array.from({ length: TICKS }).map((_, i) => (
             <span

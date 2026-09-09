@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { useGalleryAudio } from "@/hooks/useGalleryAudio";
 import { ProductPanel } from "@/components/gallery/ProductPanel";
-import { FloorsPanel } from "@/components/gallery/FloorsPanel";
 import { GalleryChrome } from "@/components/gallery/GalleryChrome";
 import { StairsPrompt } from "@/components/gallery/StairsPrompt";
 import { Hotspots } from "@/components/gallery/Hotspots";
@@ -76,7 +75,6 @@ export function Hero() {
 
   const [floorId, setFloorId] = useState<FloorId>(DEFAULT_FLOOR);
   const [activeHotspot, setActiveHotspot] = useState<Hotspot | null>(null);
-  const [floorsOpen, setFloorsOpen] = useState(false);
   const [hintVisible, setHintVisible] = useState(false);
   const [sceneReady, setSceneReady] = useState(false);
   const [dragUnlocked, setDragUnlocked] = useState(false);
@@ -100,7 +98,6 @@ export function Hero() {
   // scene's own loader lift it (with a failsafe).
   const changeFloor = useCallback(
     (id: FloorId) => {
-      setFloorsOpen(false);
       if (id === floorId) return;
 
       setVeiled(true);
@@ -359,14 +356,6 @@ export function Hero() {
           <GalleryChrome
             progressRef={progressRef}
             hintVisible={hintVisible && !reducedMotion}
-            muted={audio.muted}
-            onToggleSound={audio.toggleMuted}
-          />
-          <FloorsPanel
-            open={floorsOpen}
-            current={floorId}
-            onToggle={() => setFloorsOpen((v) => !v)}
-            onSelect={changeFloor}
           />
           <StairsPrompt
             current={floorId}

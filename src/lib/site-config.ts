@@ -3,6 +3,13 @@
 
 export const siteConfig = {
   /**
+   * The business WhatsApp number in wa.me form (country code, digits only).
+   * The enquiry form opens a chat with this number, pre-filled with the
+   * visitor's enquiry.
+   */
+  whatsappNumber: "919100673147",
+
+  /**
    * The WhatsApp enquiry link, used verbatim wherever it's needed (currently
    * the global WhatsAppButton). Replace this one string to point the whole
    * site at a different number/message — nothing else needs to change.
@@ -10,11 +17,15 @@ export const siteConfig = {
   whatsappUrl:
     "https://wa.me/919100673147?text=%E2%80%8E%20Hi%2C%20I%20came%20across%20your%20projects%20and%20really%20liked%20what%20I%20saw.%20I%E2%80%99d%20love%20to%20know%20more%20about%20your%20available%20properties%20and%20upcoming%20projects.%0A",
 
+  /** Public WhatsApp group invite. A group link cannot carry a pre-filled
+   * message, so this is a "join us" link only — enquiries go to
+   * `whatsappNumber` instead. */
+  whatsappGroupUrl: "https://chat.whatsapp.com/ElYx8JUctv2FMO1kjRez6x",
+
   /** Real contact details — shown in the footer and the homepage Contact section. */
   contact: {
-    address: "Rushikonda, Visakhapatnam",
-    phone: "+91 90142 45781",
-    email: "info@ssholdings.com",
+    phone: "9100673147",
+    email: "info@ssholdings.co",
   },
 
   /**

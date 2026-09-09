@@ -339,7 +339,7 @@ export const FLOORS: GalleryFloor[] = [
       {
         id: "ff-wall-1",
         at: 0.00,
-        vanishBy: 0.05,
+        vanishBy: 0.08,
         position: [-3.55, 4.02, -5.90],
         positionMobile: [-3.55, 4.52, -5.90],
         rotation: [0.00, -1.57, 0.00],
@@ -378,7 +378,7 @@ export const FLOORS: GalleryFloor[] = [
       // at the screen edges for a moment there — which is exactly what a
       // sticker does as you pass close to it, and the price of it being
       // readable rather than tiny for the rest of its pass.
-      { id: "ff-wall-2", at: 0.1775, visible: [0.058, 0.276], position: [-13.51, 2.55, 2.38], rotation: [0.00, -1.57, 0.00], bold: true, fontSize: 0.34, fontSizeMobile: 0.26, fitWidth: 3.55, fitWidthMobile: 2.80, text: "Designed and built as\nper Vastu Principles" },
+      { id: "ff-wall-2", at: 0.1775, visible: [0.058, 0.276], position: [-13.51, 2.55, 2.38], rotation: [0.00, -1.57, 0.00], bold: true, fontSize: 0.34, fontSizeMobile: 0.34, fitWidth: 3.55, fitWidthMobile: 2.80, text: "Vastu-Compliant Design\nand Construction" },
       // wall-3 sits on the leaning marble panel in the niche past the
       // credenza: that panel is 1.20 wide x 1.47 tall, centred at
       // (-10.44, 1.94, 0.86) and tilted back ~10deg, so the caption takes
@@ -388,7 +388,7 @@ export const FLOORS: GalleryFloor[] = [
       // off. Broken over two lines, 0.23 puts the longer line at ~1.05 inside
       // the 1.20 frame. Phones take 0.25 instead (~1.14 of the 1.20) so the
       // plaque is not too quiet to read on a small screen while still fitting.
-      { id: "ff-wall-3", at: 0.2925, visible: [0.222, 0.408], position: [-10.44, 1.95, 0.92], rotation: [-0.17, 0.00, 0.00], fontSize: 0.23, fontSizeMobile: 0.25, decal: true, text: "Address\nof Quality" },
+      { id: "ff-wall-3", at: 0.2925, visible: [0.222, 0.408], position: [-10.44, 1.95, 0.92], rotation: [-0.17, 0.00, 0.00], fontSize: 0.18, fontSizeMobile: 0.18, decal: true, text: "No Shortcuts\nJust Quality" },
       // wall-4 is lettering on the chimney breast above the fireplace — the
       // panel the client marked up in public/demo/fourthtext.png. That face is
       // the rectangle x -9.40..-5.10 at z 1.86 (its neighbours on both sides
@@ -402,7 +402,7 @@ export const FLOORS: GalleryFloor[] = [
       // the pillar and the plant cross in front of it repeatedly along the
       // way; as a decal it is hidden wherever they are, per pixel, and never
       // switched off for them.
-      { id: "ff-wall-4", at: 0.3535, visible: [0.174, 0.454], position: [-7.25, 2.90, 1.92], rotation: [0.00, 0.00, 0.00], fontSize: 0.36, fitWidth: 3.70, decal: true, text: "35+ Projects Delivered\non time Every Time" },
+      { id: "ff-wall-4", at: 0.3535, visible: [0.174, 0.454], position: [-7.25, 2.90, 1.92], rotation: [0.00, 0.00, 0.00], fontSize: 0.36, fitWidth: 3.70, decal: true, text: "35+ Projects\nDelivered on time Always" },
       // wall-5 is lettering on the dark stone slab behind the pool table
       // (public/demo/fifthtext.png). That slab leans back ~2.3deg against the
       // wall: its face runs x 5.26..8.28, top edge y 3.38, and the pale marble
@@ -413,7 +413,7 @@ export const FLOORS: GalleryFloor[] = [
       // never occluded and stays within 6° of the sightline all the way to
       // 0.65 — in view 0.412–0.770, over a third of the rail, leaving the
       // frame edge-on at the end.
-      { id: "ff-wall-5", at: 0.523, visible: [0.412, 0.770], position: [6.77, 2.63, 0.44], rotation: [-0.05, 0.00, 0.00], fontSize: 0.27, fitWidth: 2.60, decal: true, text: "25 years of Building\nQuality Homes with\nTrust" },
+      { id: "ff-wall-5", at: 0.523, visible: [0.412, 0.770], position: [6.77, 2.63, 0.44], rotation: [-0.05, 0.00, 0.00], fontSize: 0.27, fitWidth: 2.60, decal: true, text: "25 years of Building\nQuality Homes and\nLasting Trust" },
       // wall-6 moves onto the framed artwork over the bed
       // (public/demo/sixthtext.png) — it used to sit on the pool-room wall,
       // one caption after wall-5 and on the same surface, which is what the
@@ -422,7 +422,7 @@ export const FLOORS: GalleryFloor[] = [
       // it at 0.05 off the face. Squarest at 0.812 (3deg), never occluded;
       // in view 0.714–0.870, from the moment the camera rounds the corner
       // towards the bed until the frame edge takes it.
-      { id: "ff-wall-6", at: 0.812, visible: [0.714, 0.870], position: [9.28, 2.24, -2.77], rotation: [0.00, 1.57, 0.00], fontSize: 0.26, fitWidth: 0.90, decal: true, text: "Building\nLuxury\nHomes" },
+      { id: "ff-wall-6", at: 0.812, visible: [0.714, 0.870], position: [9.28, 2.24, -2.77], rotation: [0.00, 1.57, 0.00], fontSize: 0.26, fitWidth: 0.90, decal: true, text: "Built Right,\nBuilt to Last" },
       // wall-7 goes on the marble slab leaning in the dressing room
       // (public/demo/seventhtext.png): face z -7.47..-8.70, y 0.05..2.13,
       // leaning back 0.08 rad so its x runs 11.69 at the foot to 11.51 at the
@@ -432,7 +432,7 @@ export const FLOORS: GalleryFloor[] = [
       // tilt and swallows it. Five short lines keep the type big enough to
       // read on a 1.23m-wide slab. Squarest at 0.874, in view 0.826–0.920,
       // sharing the frame with wall-6 at the start and wall-8 at the end.
-      { id: "ff-wall-7", at: 0.874, visible: [0.826, 0.920], position: [11.64, 1.25, -8.08], rotation: [-1.5708, 1.4910, 1.5708], fontSize: 0.21, fitWidth: 1.02, bold: true, decal: true, text: "Visit Our\nProjects\nand See\nthe Quality\nFirsthand" },
+      { id: "ff-wall-7", at: 0.874, visible: [0.826, 0.920], position: [11.64, 1.25, -8.08], rotation: [-1.5708, 1.4910, 1.5708], fontSize: 0.21, fitWidth: 1.02, bold: true, decal: true, text: "Visit Our\nProjects\nand See\nthe Quality\nFeel the\ndifference" },
       // wall-8 goes on the framed panel beside the bathroom basin
       // (public/demo/eighthtext.png). That panel is its own plane at x 10.00,
       // standing 0.08 proud of the wall behind it; canvas z -11.27..-12.57,
@@ -443,7 +443,7 @@ export const FLOORS: GalleryFloor[] = [
       // The closing line: in view over the last 0.056 of the rail, since it
       // sits at the far end of the bathroom and the camera is still walking
       // towards it, and up to the very end so it is there when you arrive.
-      { id: "ff-wall-9", at: 1.00, visible: [0.944, 1.000], position: [11.59, 2.50, -18.54], rotation: [0.00, 1.57, 0.00], text: "You’ve seen enough. Now come see us." },
+      { id: "ff-wall-9", at: 1.00, visible: [0.944, 1.000], position: [11.59, 2.50, -18.54], rotation: [0.00, 1.57, 0.00], text: "Visit Our Projects, It will be worth it" },
     ],
   },
   {

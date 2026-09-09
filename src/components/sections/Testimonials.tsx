@@ -101,7 +101,7 @@ const TESTIMONIAL_CONTENT: TestimonialContent[] = [
     id: 8,
     type: "text",
     featured: true,
-    quote: "Every promise in the contract was kept — rare in this industry.",
+    quote: "Every promise in the contract was kept. Rare in this industry.",
     customerName: "Ramesh Naidu",
     location: "Seethammadhara",
     verified: true,
@@ -496,7 +496,7 @@ export function Testimonials() {
         <div className="mx-auto mb-8 max-w-2xl text-center sm:mb-12">
           <p className="text-xs uppercase tracking-[0.3em] text-fg/50">Testimonials</p>
           <h2 className="font-display mt-3 text-balance text-2xl font-medium sm:text-3xl lg:text-4xl">
-            Real experiences from the people we build for.
+            What Our Homeowners Have to Say
           </h2>
         </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { useEffect } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { navLinks } from "@/data/nav";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
@@ -10,11 +11,37 @@ interface MobileMenuProps {
 }
 
 export function MobileMenu({ open, onClose }: MobileMenuProps) {
+  const reducedMotion = useReducedMotion();
+
+  // While the menu covers the screen the page behind it must not move: on a
+  // phone a drag over the panel would otherwise scroll the document (or scrub
+  // the 3D hero) underneath, which reads as the menu itself sliding around.
+  // `touch-none` on the panel stops the gesture; locking the body keeps a
+  // stray wheel or keyboard scroll out too. The scroll position is left
+  // alone so a link to an anchor still lands where it should.
+  useEffect(() => {
+    if (!open) return;
+
+    const { body } = document;
+    const previousOverflow = body.style.overflow;
+    body.style.overflow = "hidden";
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open, onClose]);
+
   return (
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-40 bg-bg md:hidden"
+          className="fixed inset-0 z-40 touch-none overscroll-contain bg-bg md:hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -29,9 +56,12 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
                 key={link.href}
                 href={link.href}
                 onClick={onClose}
-                initial={{ opacity: 0, y: 16 }}
+                initial={{ opacity: 0, y: reducedMotion ? 0 : 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.08 * i, duration: 0.4 }}
+                transition={{
+                  delay: reducedMotion ? 0 : 0.04 * i,
+                  duration: reducedMotion ? 0.01 : 0.3,
+                }}
                 className="font-display text-4xl font-medium py-3 text-fg"
               >
                 {link.label}
@@ -39,9 +69,12 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
             ))}
 
             <motion.div
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: reducedMotion ? 0 : 6 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.08 * navLinks.length, duration: 0.4 }}
+              transition={{
+                delay: reducedMotion ? 0 : 0.04 * navLinks.length,
+                duration: reducedMotion ? 0.01 : 0.3,
+              }}
               className="mt-8 flex items-center gap-3 border-t border-fg/10 pt-6 text-sm uppercase tracking-[0.25em] text-fg/60"
             >
               <ThemeToggle className="flex h-9 w-9 items-center justify-center rounded-full border border-fg/15 text-fg transition-colors hover:bg-fg/10" />

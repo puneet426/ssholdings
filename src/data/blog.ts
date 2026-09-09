@@ -34,7 +34,7 @@ export const blogPosts: BlogPost[] = [
     image: "/images/blog/blog1.png",
     featured: true,
     content: [
-      "A good home rarely happens by accident. Long before the first wall goes up, the layout has already been considered from every angle — where the morning light enters, how air moves through the rooms, which spaces should feel private, and how a family naturally moves through the home during the day. These decisions may not be visible once construction is complete, but they have a lasting impact on how comfortable and functional a home feels.",
+      "A good home rarely happens by accident. Long before the first wall goes up, the layout has already been considered from every angle: where the morning light enters, how air moves through the rooms, which spaces should feel private, and how a family naturally moves through the home during the day. These decisions may not be visible once construction is complete, but they have a lasting impact on how comfortable and functional a home feels.",
       
       "Modern homes need to do more than simply provide shelter. They need to support the way people live, work, relax, and spend time with their families. A well-planned home gives every space a purpose while still allowing rooms to feel open, connected, and adaptable. At SS Holdings, we believe that good design begins by understanding these everyday needs rather than simply following temporary design trends.",
       
@@ -42,7 +42,7 @@ export const blogPosts: BlogPost[] = [
       
       "Location and surroundings also play an important role in creating a better living environment. The way a building connects with its neighborhood, roads, open spaces, and nearby facilities can influence everyday convenience. Good planning takes these factors into account so that the final development feels connected to its surroundings rather than isolated from them.",
       
-      "Construction quality is the second important part of creating a lasting home. Some of the most important elements of a building are the ones that cannot be seen after completion — the quality of structural materials, reinforcement, concrete work, waterproofing, electrical systems, plumbing, and the preparation that happens behind finished surfaces. These details determine how a building performs years after possession.",
+      "Construction quality is the second important part of creating a lasting home. Some of the most important elements of a building are the ones that cannot be seen after completion: the quality of structural materials, reinforcement, concrete work, waterproofing, electrical systems, plumbing, and the preparation that happens behind finished surfaces. These details determine how a building performs years after possession.",
       
       "At SS Holdings, quality should not be something that is added at the end of a project. It needs to be considered at every stage, from material selection and structural work to finishing and final inspection. A beautifully designed space has little value if the construction beneath it does not provide the reliability and durability that homeowners expect.",
       
@@ -89,7 +89,7 @@ export const blogPosts: BlogPost[] = [
       
       "The strongest properties bring these factors together. A good location creates accessibility and demand. Quality construction provides durability. Thoughtful design creates everyday comfort and usability. Together, these qualities can help a property retain its appeal and remain a meaningful asset for its owners.",
       
-      "At SS Holdings, we believe that a home should be evaluated by more than what is immediately visible. The real value of a property comes from the decisions made before, during, and after construction — from choosing the right location and planning the right spaces to maintaining high standards of construction and finishing.",
+      "At SS Holdings, we believe that a home should be evaluated by more than what is immediately visible. The real value of a property comes from the decisions made before, during, and after construction, from choosing the right location and planning the right spaces to maintaining high standards of construction and finishing.",
       
       "A property worth investing in is ultimately one that continues to serve its owners well. When location, quality, design, and long-term thinking come together, a home becomes more than a place to live. It becomes an asset designed to provide comfort today while retaining its relevance and value for the years ahead."
     ]
@@ -124,7 +124,7 @@ export const blogPosts: BlogPost[] = [
       
       "Building for tomorrow also means thinking about durability and maintenance. A well-built home should be able to handle everyday use without constant repairs. Good waterproofing, appropriate drainage, strong finishes, and reliable building systems can reduce avoidable maintenance and help preserve the condition of the property over time.",
       
-      "A future-ready home does not have to be filled with technology or complicated features. Sometimes the smartest decisions are simple ones — creating enough natural light, allowing good airflow, providing practical storage, using durable materials, and making rooms flexible enough to accommodate different stages of life.",
+      "A future-ready home does not have to be filled with technology or complicated features. Sometimes the smartest decisions are simple ones: creating enough natural light, allowing good airflow, providing practical storage, using durable materials, and making rooms flexible enough to accommodate different stages of life.",
       
       "At SS Holdings, we believe that lasting value comes from making the right decisions at the beginning. When design is based on real human needs and construction is carried out with attention to quality, the result is a home that can continue to perform well long after the project is completed.",
       
