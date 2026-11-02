@@ -18,6 +18,18 @@ export interface SpecGroup {
   items: SpecItem[];
 }
 
+export interface GalleryImage {
+  /** Path under /public. */
+  src: string;
+  alt: string;
+  caption: string;
+  /**
+   * Line drawings (floor plans) sit on a white plate. Every picture is shown
+   * uncropped at its own aspect ratio.
+   */
+  drawing?: boolean;
+}
+
 export interface Project {
   /** Unique URL segment — used at /projects/<slug>. Lowercase, hyphenated. */
   slug: string;
@@ -41,11 +53,10 @@ export interface Project {
   /** Path under /public to the brochure PDF. */
   brochure?: string;
   /**
-   * Path under /public to the typical-floor plan drawing. Shown full width
-   * above the brochure link — it is a line drawing, so the detail page plates
-   * it on white rather than cropping it to the hero's 16:9.
+   * Pictures shown on the detail page, in order, below the facts tab. When
+   * set, they replace the single `image` there (`image` is still the card).
    */
-  floorPlan?: string;
+  gallery?: GalleryImage[];
   specs?: SpecGroup[];
 }
 
@@ -129,10 +140,33 @@ export const projects: Project[] = [
       "3 BHK: 1,465 & 1,790 sq. ft.",
     ],
     scale: ["40 Homes", "2 Blocks"],
-    image: "/images/projects/project3.png",
+    image: "/images/projects/sscourt-elevation.jpg",
     featured: true,
     brochure: "/images/projects/ss-courtyard.pdf",
-    floorPlan: "/images/projects/sscourtA.jpeg",
+    gallery: [
+      {
+        src: "/images/projects/sscourt-elevation.jpg",
+        alt: "SS Courtyard elevation",
+        caption: "Elevation",
+      },
+      {
+        src: "/images/projects/sscourt-site.jpg",
+        alt: "SS Courtyard under construction",
+        caption: "Construction Progress",
+      },
+      {
+        src: "/images/projects/sscourt-site-b-plan.jpg",
+        alt: "SS Courtyard Site B typical floor plan",
+        caption: "Site B: Typical Floor Plan",
+        drawing: true,
+      },
+      {
+        src: "/images/projects/sscourt-site-a-plan.jpeg",
+        alt: "SS Courtyard Site A floor plan",
+        caption: "Site A: Floor Plan",
+        drawing: true,
+      },
+    ],
     content: [
       "SS Courtyard is designed as a comfortable family home, combining thoughtful planning with quality construction and a peaceful residential setting. Practical layouts and a warm atmosphere make it a place where everyday living feels easy, comfortable and welcoming.",
     ],

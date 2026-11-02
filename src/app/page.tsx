@@ -9,7 +9,9 @@ import {
   OngoingProjects,
 } from "@/components/sections/Projects";
 import { ManagingPartners } from "@/components/sections/ManagingPartners";
-import { Testimonials } from "@/components/sections/Testimonials";
+// Testimonials are hidden until real reviews are collected — restore this
+// import and the <Testimonials /> line below to bring the section back.
+// import { Testimonials } from "@/components/sections/Testimonials";
 import { FAQ } from "@/components/sections/FAQ";
 import { Contact } from "@/components/sections/Contact";
 
@@ -25,7 +27,7 @@ export default function Home() {
         <CompletedProjects />
         <OngoingProjects />
         <ManagingPartners />
-        <Testimonials />
+        {/* <Testimonials /> */}
         <FAQ />
         <Contact />
       </main>

@@ -113,45 +113,6 @@ export default async function ProjectDetailsPage({
               {project.name}
             </h1>
 
-            <div className="mt-10 aspect-16/9 w-full overflow-hidden rounded-xl border border-fg/10 bg-well">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={project.image}
-                alt={project.name}
-                className="h-full w-full object-cover"
-              />
-            </div>
-
-            {project.floorPlan && (
-              <figure className="mt-10">
-                <div className="overflow-hidden rounded-xl border border-fg/10 bg-white p-3 sm:p-5">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={project.floorPlan}
-                    alt={`${project.name} floor plan`}
-                    className="h-auto w-full"
-                  />
-                </div>
-                <figcaption className="mt-3 text-center text-xs uppercase tracking-[0.2em] text-fg/50">
-                  Typical Floor Plan
-                </figcaption>
-              </figure>
-            )}
-
-            {project.brochure && (
-              <div className="mt-8 flex justify-center">
-                <a
-                  href={project.brochure}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-accent/50 px-7 py-3 text-sm font-medium text-accent transition-colors hover:bg-accent/10"
-                >
-                  <FileText className="h-4 w-4" strokeWidth={1.5} />
-                  View and Download Brochure
-                </a>
-              </div>
-            )}
-
             <div className="mt-10 grid grid-cols-2 gap-6 rounded-xl border border-fg/10 bg-fg/[0.04] p-6 sm:grid-cols-4">
               {facts.map((fact) => (
                 <div key={fact.label} className="flex flex-col gap-2">
@@ -170,6 +131,60 @@ export default async function ProjectDetailsPage({
                 </div>
               ))}
             </div>
+
+            {project.gallery ? (
+              <div className="mt-10 space-y-10">
+                {project.gallery.map((picture) => (
+                  <figure key={picture.src}>
+                    {picture.drawing ? (
+                      <div className="overflow-hidden rounded-xl border border-fg/10 bg-white p-3 sm:p-5">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={picture.src}
+                          alt={picture.alt}
+                          className="h-auto w-full"
+                        />
+                      </div>
+                    ) : (
+                      <div className="overflow-hidden rounded-xl border border-fg/10 bg-well">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={picture.src}
+                          alt={picture.alt}
+                          className="h-auto w-full"
+                        />
+                      </div>
+                    )}
+                    <figcaption className="mt-3 text-center text-xs uppercase tracking-[0.2em] text-fg/50">
+                      {picture.caption}
+                    </figcaption>
+                  </figure>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-10 aspect-16/9 w-full overflow-hidden rounded-xl border border-fg/10 bg-well">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={project.image}
+                  alt={project.name}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            )}
+
+            {project.brochure && (
+              <div className="mt-8 flex justify-center">
+                <a
+                  href={project.brochure}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border border-accent/50 px-7 py-3 text-sm font-medium text-accent transition-colors hover:bg-accent/10"
+                >
+                  <FileText className="h-4 w-4" strokeWidth={1.5} />
+                  View and Download Brochure
+                </a>
+              </div>
+            )}
 
             {project.content.length > 0 && (
               <div className="mt-12 space-y-6 leading-relaxed text-fg/75">
